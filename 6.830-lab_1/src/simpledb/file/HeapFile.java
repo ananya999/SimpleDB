@@ -27,7 +27,7 @@ import simpledb.tuple.TupleDesc;
  * in no particular order. Tuples are stored on pages, each of which is a fixed
  * size, and the file is simply a collection of those pages. HeapFile works
  * closely with HeapPage. The format of HeapPages is described in the HeapPage
- * constructor.
+ * constructor. commited to github
  * 
  * @see simpledb.page.HeapPage#HeapPage
  * @author Sam Madden
