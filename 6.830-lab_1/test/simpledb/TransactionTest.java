@@ -1,10 +1,19 @@
 package simpledb;
 
-import java.util.*;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Iterator;
+
+import junit.framework.JUnit4TestAdapter;
+
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import junit.framework.JUnit4TestAdapter;
+
+import simpledb.page.HeapPage;
+import simpledb.page.HeapPageId;
+import simpledb.page.PageId;
+import simpledb.tuple.IntField;
+import simpledb.tuple.Tuple;
 
 public class TransactionTest extends TestUtil.CreateHeapFile {
   private PageId p0, p1, p2;

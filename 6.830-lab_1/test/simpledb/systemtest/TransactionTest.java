@@ -1,5 +1,8 @@
 package simpledb.systemtest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,13 +10,24 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Arrays;
 
 import org.junit.Test;
 
-import simpledb.*;
-
-import static org.junit.Assert.*;
+import simpledb.Database;
+import simpledb.Transaction;
+import simpledb.TransactionId;
+import simpledb.exceptions.DbException;
+import simpledb.exceptions.TransactionAbortedException;
+import simpledb.file.DbFile;
+import simpledb.file.DbFileIterator;
+import simpledb.file.HeapFile;
+import simpledb.operators.Delete;
+import simpledb.operators.Insert;
+import simpledb.operators.SeqScan;
+import simpledb.operators.TupleIterator;
+import simpledb.parser.Query;
+import simpledb.tuple.IntField;
+import simpledb.tuple.Tuple;
 
 /**
  * Tests running concurrent transactions.

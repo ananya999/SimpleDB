@@ -1,10 +1,14 @@
 package simpledb;
 
-import org.junit.Before;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import junit.framework.JUnit4TestAdapter;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import simpledb.page.HeapPageId;
+import simpledb.page.PageId;
 
 public class LockingTest extends TestUtil.CreateHeapFile {
   private PageId p0, p1, p2;

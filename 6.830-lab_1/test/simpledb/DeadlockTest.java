@@ -1,13 +1,18 @@
 package simpledb;
 
-import simpledb.TestUtil.LockGrabber;
-
-import java.util.*;
-import org.junit.Before;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+
+import java.util.Random;
+
 import junit.framework.JUnit4TestAdapter;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import simpledb.TestUtil.LockGrabber;
+import simpledb.page.HeapPageId;
+import simpledb.page.PageId;
 
 public class DeadlockTest extends TestUtil.CreateHeapFile {
   private PageId p0, p1, p2;

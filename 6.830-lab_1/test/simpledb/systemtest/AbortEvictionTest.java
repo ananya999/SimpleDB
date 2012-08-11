@@ -1,11 +1,17 @@
 package simpledb.systemtest;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
-import simpledb.*;
-
-import static org.junit.Assert.*;
 import org.junit.Test;
+
+import simpledb.Database;
+import simpledb.Transaction;
+import simpledb.exceptions.DbException;
+import simpledb.exceptions.TransactionAbortedException;
+import simpledb.file.HeapFile;
 
 public class AbortEvictionTest extends SimpleDbTestBase {
     /** Aborts a transaction and ensures that its effects were actually undone.
