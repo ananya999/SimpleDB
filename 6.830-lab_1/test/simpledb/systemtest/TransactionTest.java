@@ -126,7 +126,7 @@ public class TransactionTest extends SimpleDbTestBase {
                         q1.close();
 
                         // delete old values (i.e., just one row) from table
-                        Delete delOp = new Delete(tr.getId(), ss2);
+                        Delete delOp = new Delete(tr.getId(),tableId, ss2);
 
                         Query q2 = new Query(delOp, tr.getId());
 
