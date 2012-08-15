@@ -5,6 +5,8 @@ import java.util.NoSuchElementException;
 
 import simpledb.BufferPool;
 import simpledb.Database;
+import simpledb.Permissions;
+import simpledb.TransactionId;
 import simpledb.exceptions.DbException;
 import simpledb.exceptions.TransactionAbortedException;
 import simpledb.page.HeapPage;
@@ -19,9 +21,12 @@ public class HeapFileIterator implements DbFileIterator {
 	private Iterator<Tuple> currentTupleIter;
 	private HeapFile heapFile;
 	private boolean isOpen = false; 
-	public HeapFileIterator(HeapFile heapFile)
+	private TransactionId tid;
+	
+	public HeapFileIterator(HeapFile heapFile, TransactionId tid)
 	{
 		this.heapFile = heapFile;
+		this.tid = tid;
 	}
 	
 	@Override
@@ -31,7 +36,7 @@ public class HeapFileIterator implements DbFileIterator {
 		{
 			isOpen = true;
 			currentPageId = new HeapPageId(heapFile.getId(), 0);
-			HeapPage page = (HeapPage) pool.getPage(null, currentPageId, null);
+			HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY);
 			currentTupleIter = page.iterator();
 		}
 		else
@@ -64,7 +69,7 @@ public class HeapFileIterator implements DbFileIterator {
 			if (currentPageId.pageno() < heapFile.numPages() - 1)
 			{
 				currentPageId = new HeapPageId(heapFile.getId(), currentPageId.pageno() + 1);
-				HeapPage page = (HeapPage) pool.getPage(null, currentPageId, null);
+				HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY);
 				currentTupleIter = page.iterator();
 			}
 		}
@@ -79,7 +84,7 @@ public class HeapFileIterator implements DbFileIterator {
 			throw new NoSuchElementException("this DbFileIterator is closed");
 		}
 		currentPageId = new HeapPageId(heapFile.getId(), 0);
-		HeapPage page = (HeapPage) pool.getPage(null, currentPageId, null);
+		HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY);
 		currentTupleIter = page.iterator();
 	}
 

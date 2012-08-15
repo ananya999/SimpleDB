@@ -83,8 +83,6 @@ public class Delete extends AbstractDbIterator {
 					bufferPool.deleteTuple(t, tableid, child.next());
 					rowCount++;
 				}
-				HeapFile dbFile = (HeapFile)Database.getCatalog().getDbFile(tableid);
-				dbFile.savePagesToDisk();
 				tuple = buildRowCountTuple(rowCount);
 			}
 		} 

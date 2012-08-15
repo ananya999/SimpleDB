@@ -11,6 +11,7 @@ import java.util.Map;
 
 import simpledb.BufferPool;
 import simpledb.Database;
+import simpledb.Permissions;
 import simpledb.RecordId;
 import simpledb.TransactionId;
 import simpledb.exceptions.DbException;
@@ -157,7 +158,7 @@ public class HeapFile implements DbFile {
 		for (int i = 0; i < numPages(); i++) 
 		{
 			PageId pid = new HeapPageId(getId(), i);
-			HeapPage page = (HeapPage)bufferPool.getPage(null, pid, null);
+			HeapPage page = (HeapPage)bufferPool.getPage(tid, pid, Permissions.READ_WRITE);
 			if (page.getNumEmptySlots() > 0)
 			{
 				needNewPage = false;
@@ -175,9 +176,7 @@ public class HeapFile implements DbFile {
 			// add the tuple to the new page
 			HeapPage newPage = new HeapPage(pid, data);
 			pages = addTupleToPage(tuple, newPage);
-			writePage(newPage);
 		}
-		pages.get(0).markDirty(true, tid);
 		return pages;
 	}
 
@@ -214,31 +213,13 @@ public class HeapFile implements DbFile {
 		PageId pageId = record.getPageId();
 		BufferPool bufferPool = Database.getBufferPool();
 		HeapPage p = null;
-		p = (HeapPage)bufferPool.getPage(null, pageId, null);
+		p = (HeapPage)bufferPool.getPage(tid, pageId, Permissions.READ_WRITE);
 		p.deleteTuple(t);
-		pagesToDisk.put(p.getId().pageno(), p);
 		return p;
 	}
 
 	// see DbFile.java for javadocs
 	public DbFileIterator iterator(TransactionId tid) {
-		return new HeapFileIterator(this);
+		return new HeapFileIterator(this, tid);
 	}
-	public void savePagesToDisk()
-	{
-		Collection<HeapPage> values = pagesToDisk.values();
-		try 
-		{
-			for (HeapPage p : values) 
-			{
-				writePage(p);
-				p.markDirty(false, null);
-			}
-		} 
-		catch (IOException e) 
-		{
-			
-		}
-	}
-
 }
