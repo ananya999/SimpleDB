@@ -346,20 +346,28 @@ public class TestUtil {
         }
 
         public void run() {
-            try {
+            try 
+            {
                 Database.getBufferPool().getPage(tid, pid, perm);
-                synchronized(alock) {
+                synchronized(alock) 
+                {
                     acquired = true;
                 }
-            } catch (Exception e) {
+            } 
+            catch (Exception e) 
+            {
                 e.printStackTrace();
-                synchronized(elock) {
+                synchronized(elock) 
+                {
                     error = e;
                 }
 
-                try {
+                try 
+                {
                     Database.getBufferPool().transactionComplete(tid, false);
-                } catch (java.io.IOException e2) {
+                } 
+                catch (java.io.IOException e2) 
+                {
                     e2.printStackTrace();
                 }
             }

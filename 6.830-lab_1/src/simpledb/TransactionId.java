@@ -9,7 +9,9 @@ public class TransactionId {
     static AtomicLong counter = new AtomicLong(0);
     long myid;
 
-    public TransactionId() {
+    
+
+	public TransactionId() {
         myid = counter.getAndIncrement();
     }
 
@@ -24,4 +26,9 @@ public class TransactionId {
     public int hashCode() {
         return (int) myid;
     }
+    
+    @Override
+	public String toString() {
+		return "TransactionId [myid=" + myid + "]";
+	}
 }

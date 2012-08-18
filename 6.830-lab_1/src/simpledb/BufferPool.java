@@ -34,14 +34,16 @@ public class BufferPool {
     /** Default number of pages passed to the constructor. This is used by
     other classes. BufferPool should use the numPages argument to the
     constructor instead. */
-    public static final int DEFAULT_PAGES = 500;
+    public static final int DEFAULT_PAGES = 50;
 
     private int numPages;
     private Map<PageId, Page> bufferedPages = new HashMap<PageId, Page>();
     private List<PageId> queue;
     
     private Map <TransactionId, HashSet<PageId>> m_tarnsactionPage = new HashMap <TransactionId, HashSet<PageId>>();
-    private Map<PageId, ReadWriteLock> m_pageLock= new HashMap<PageId, ReadWriteLock>();
+    private Map<PageId, ReentrantReadWriteLock> m_pageLock= new HashMap<PageId, ReentrantReadWriteLock>();
+
+    private ReadLockCounter pageReadLockCouter;
     
     
     /**
@@ -53,6 +55,7 @@ public class BufferPool {
     {
     	this.numPages = numPages;
     	queue = new ArrayList<PageId>(numPages);
+    	pageReadLockCouter = new ReadLockCounter();
     }
 
     /**
@@ -73,8 +76,22 @@ public class BufferPool {
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException, DbException {
     	try 
     	{
-    		Lock pageLock = getPageLock(tid, pid, perm);
-			pageLock.lock();
+    		ReentrantReadWriteLock lock = getPageLock(tid, pid);
+    		if (perm == Permissions.READ_ONLY)
+    		{
+    			lock.readLock().lock();
+    			pageReadLockCouter.addTransaction(pid, tid);
+    		}
+    		else if (perm == Permissions.READ_WRITE)
+    		{
+    			// upgrade lock on page to an exclusive lock.
+    			if (pageReadLockCouter.isUpgradeLockPermited(pid, tid))
+    			{
+    				lock.readLock().unlock();
+    			}
+    			lock.writeLock().lock();
+    		}
+			
     		Page bufferedPage = bufferedPages.get(pid);
 			if (bufferedPage == null)
 			{
@@ -97,10 +114,8 @@ public class BufferPool {
         
     }
 
-	private Lock getPageLock(TransactionId tid, PageId pid, Permissions perm) 
+	private ReentrantReadWriteLock getPageLock(TransactionId tid, PageId pid) 
 	{
-		Lock res = null;
-		
 		HashSet<PageId> transactionlockedPages = m_tarnsactionPage.get(tid);
 		if (transactionlockedPages == null)
 		{
@@ -109,22 +124,15 @@ public class BufferPool {
 		}
 		transactionlockedPages.add(pid);
 		
-		ReadWriteLock lock = m_pageLock.get(pid);
+		ReentrantReadWriteLock lock = m_pageLock.get(pid);
 		if (lock == null)
 		{
 			lock = new ReentrantReadWriteLock();
+			
 			m_pageLock.put(pid, lock);
+			
 		}
-		
-		if (perm == Permissions.READ_ONLY)
-		{
-			res = lock.readLock();
-		}
-		else if (perm == Permissions.READ_WRITE)
-		{
-			res = lock.writeLock();
-		}
-		return res;
+		return lock;
 	}
 	
 	private void updateQueue(PageId pid) {
@@ -151,13 +159,21 @@ public class BufferPool {
     public  void releasePage(TransactionId tid, PageId pid) 
     {
     	// unlock the page.
-    	ReadWriteLock lock = m_pageLock.get(pid);
-    	lock.readLock().unlock();
-		lock.writeLock().unlock();
-		
+    	ReentrantReadWriteLock lock = m_pageLock.get(pid);
+    	if (lock.getReadLockCount() > 0)
+    	{
+    		lock.readLock().unlock();
+    	}
+    	if (lock.getWriteHoldCount() > 0)
+    	{
+    		lock.writeLock().unlock();
+    	}
 		// remove the page from the transaction.
     	HashSet<PageId> pages = m_tarnsactionPage.get(tid);
-    	pages.remove(pid);
+    	if (pages != null)
+    	{
+    		pages.remove(pid);
+    	}
     }
 
     /**
