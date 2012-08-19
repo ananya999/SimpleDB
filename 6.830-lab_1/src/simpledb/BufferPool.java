@@ -191,9 +191,15 @@ public class BufferPool {
 		HashSet<PageId> pages = m_tarnsactionPage.get(tid);
     	for (PageId id : pages) 
     	{
-    		ReadWriteLock lock = m_pageLock.get(id);
-    		lock.readLock().unlock();
-    		lock.writeLock().unlock();
+    		ReentrantReadWriteLock lock = m_pageLock.get(id);
+    		if (lock.getReadLockCount() > 0)
+        	{
+        		lock.readLock().unlock();
+        	}
+        	if (lock.getWriteHoldCount() > 0)
+        	{
+        		lock.writeLock().unlock();
+        	}
 		}
     	return pages;
 	}
@@ -221,16 +227,21 @@ public class BufferPool {
      */
     public void transactionComplete(TransactionId tid, boolean commit) throws IOException 
     {
-    	if (commit)
-    	{
-    		HashSet<PageId> lockedPages = m_tarnsactionPage.get(tid);
-    		for (PageId id : lockedPages) 
-    		{
-    			flushPage(id);
+		HashSet<PageId> lockedPages = m_tarnsactionPage.get(tid);
+		for (PageId id : lockedPages) 
+		{
+			if (commit)
+			{
+				flushPage(id);
 			}
-    		// releasing any locks that the transaction held.
-    		releaseAllLockedPages(tid);
-    	}
+			// restore the page to the cache before aborting
+			else
+			{
+				restorePage(id);
+			}
+		}
+		// releasing any locks that the transaction held.
+		releaseAllLockedPages(tid);
     }
 
     /**
@@ -317,6 +328,18 @@ public class BufferPool {
 			p.markDirty(false, null);
 		}
     }
+    
+    public synchronized  void restorePage(PageId pid) throws IOException
+    {
+    	Page p = bufferedPages.get(pid);
+    	
+    	if (p != null && p.isDirty() != null)
+    	{
+			DbFile dbFile = Database.getCatalog().getDbFile(pid.getTableId());
+			p = dbFile.readPage(pid);
+			p.markDirty(false, null);
+		}
+    }
 
     /** Write all pages of the specified transaction to disk.
      */
@@ -345,6 +368,7 @@ public class BufferPool {
         		if (tryEvict(nextId))
         		{
         			pageEvicted = true;
+        			break;
         		}
         		
 			}
