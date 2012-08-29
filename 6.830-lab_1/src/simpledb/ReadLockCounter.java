@@ -25,7 +25,13 @@ public class ReadLockCounter
 		transactionGroup.add(tid);
 	}
 
-
+	public void removeTransaction(PageId pid, TransactionId tid) 
+	{
+		Set<TransactionId> transacations = m_pageTransactions.get(pid);
+		transacations.remove(pid);
+		
+	}
+	
 	public  boolean isUpgradeLockPermited(PageId pid, TransactionId tid) 
 	{
 		Set<TransactionId> transactionGroup = m_pageTransactions.get(pid);

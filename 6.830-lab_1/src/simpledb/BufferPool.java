@@ -40,12 +40,6 @@ public class BufferPool {
     private Map<PageId, Page> bufferedPages = new HashMap<PageId, Page>();
     private List<PageId> queue;
     
-    private Map <TransactionId, HashSet<PageId>> m_tarnsactionPage = new HashMap <TransactionId, HashSet<PageId>>();
-    private Map<PageId, ReentrantReadWriteLock> m_pageLock= new HashMap<PageId, ReentrantReadWriteLock>();
-
-    private ReadLockCounter pageReadLockCouter;
-    
-    
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
@@ -80,6 +74,7 @@ public class BufferPool {
     		if (perm == Permissions.READ_ONLY)
     		{
     			lock.readLock().lock();
+    			
     			pageReadLockCouter.addTransaction(pid, tid);
     		}
     		else if (perm == Permissions.READ_WRITE)
@@ -116,20 +111,20 @@ public class BufferPool {
 
 	private ReentrantReadWriteLock getPageLock(TransactionId tid, PageId pid) 
 	{
-		HashSet<PageId> transactionlockedPages = m_tarnsactionPage.get(tid);
+		HashSet<PageId> transactionlockedPages = tarnsactionMap.get(tid);
 		if (transactionlockedPages == null)
 		{
 			transactionlockedPages = new HashSet<PageId>();
-			m_tarnsactionPage.put(tid, transactionlockedPages);
+			tarnsactionMap.put(tid, transactionlockedPages);
 		}
 		transactionlockedPages.add(pid);
 		
-		ReentrantReadWriteLock lock = m_pageLock.get(pid);
+		ReentrantReadWriteLock lock = lockMap.get(pid);
 		if (lock == null)
 		{
 			lock = new ReentrantReadWriteLock();
 			
-			m_pageLock.put(pid, lock);
+			lockMap.put(pid, lock);
 			
 		}
 		return lock;
@@ -159,7 +154,7 @@ public class BufferPool {
     public  void releasePage(TransactionId tid, PageId pid) 
     {
     	// unlock the page.
-    	ReentrantReadWriteLock lock = m_pageLock.get(pid);
+    	ReentrantReadWriteLock lock = lockMap.get(pid);
     	if (lock.getReadLockCount() > 0)
     	{
     		lock.readLock().unlock();
@@ -169,7 +164,7 @@ public class BufferPool {
     		lock.writeLock().unlock();
     	}
 		// remove the page from the transaction.
-    	HashSet<PageId> pages = m_tarnsactionPage.get(tid);
+    	HashSet<PageId> pages = tarnsactionMap.get(tid);
     	if (pages != null)
     	{
     		pages.remove(pid);
@@ -188,10 +183,10 @@ public class BufferPool {
 
 	private Set<PageId> releaseAllLockedPages(TransactionId tid) 
 	{
-		HashSet<PageId> pages = m_tarnsactionPage.get(tid);
+		HashSet<PageId> pages = tarnsactionMap.get(tid);
     	for (PageId id : pages) 
     	{
-    		ReentrantReadWriteLock lock = m_pageLock.get(id);
+    		ReentrantReadWriteLock lock = lockMap.get(id);
     		if (lock.getReadLockCount() > 0)
         	{
         		lock.readLock().unlock();
@@ -201,13 +196,14 @@ public class BufferPool {
         		lock.writeLock().unlock();
         	}
 		}
+    	tarnsactionMap.remove(tid);
     	return pages;
 	}
 
     /** Return true if the specified transaction has a lock on the specified page */
     public boolean holdsLock(TransactionId tid, PageId p) 
     {
-    	HashSet<PageId> pages = m_tarnsactionPage.get(tid);
+    	HashSet<PageId> pages = tarnsactionMap.get(tid);
     	for (PageId id : pages) 
     	{
     		if (id.equals(p))
@@ -227,7 +223,7 @@ public class BufferPool {
      */
     public void transactionComplete(TransactionId tid, boolean commit) throws IOException 
     {
-		HashSet<PageId> lockedPages = m_tarnsactionPage.get(tid);
+		HashSet<PageId> lockedPages = tarnsactionMap.get(tid);
 		for (PageId id : lockedPages) 
 		{
 			if (commit)
@@ -241,6 +237,7 @@ public class BufferPool {
 			}
 		}
 		// releasing any locks that the transaction held.
+		//TODO - remove the transactions from the data structure.
 		releaseAllLockedPages(tid);
     }
 
@@ -338,6 +335,7 @@ public class BufferPool {
 			DbFile dbFile = Database.getCatalog().getDbFile(pid.getTableId());
 			p = dbFile.readPage(pid);
 			p.markDirty(false, null);
+			bufferedPages.put(pid, p);
 		}
     }
 
