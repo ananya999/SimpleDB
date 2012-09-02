@@ -8,7 +8,12 @@ import simpledb.Permissions;
 import simpledb.TransactionId;
 import simpledb.page.PageId;
 
-
+/**
+ * non re-entrant read-write lock
+ * 
+ * @author daniela
+ *
+ */
 public class DbLock 
 {
 	private ReentrantReadWriteLock lock;
@@ -26,23 +31,28 @@ public class DbLock
 	{
 		if (permission == Permissions.READ_ONLY)
 		{
-			System.out.println(isExclusiveLock());
-			lock.readLock().lock();
-			LockManager.getInstance().addLockedPage(tid, pid);
-			transactions.add(tid);
-		}
-		else
-		{
-			if (lock.writeLock().tryLock()) 
+			if (lock.getReadHoldCount() == 0) 
 			{
+				lock.readLock().lock();
 				LockManager.getInstance().addLockedPage(tid, pid);
 				transactions.add(tid);
 			}
-			else
+		}
+		else
+		{
+			if (lock.getWriteHoldCount() == 0)
 			{
-				if (!tryUpgradeLock(tid))
+				if (lock.writeLock().tryLock()) 
 				{
-					lock.writeLock().lock();
+					LockManager.getInstance().addLockedPage(tid, pid);
+					transactions.add(tid);
+				}
+				else
+				{
+					if (!tryUpgradeLock(tid))
+					{
+						lock.writeLock().lock();
+					}
 				}
 			}
 		}
@@ -53,6 +63,10 @@ public class DbLock
 		if(isExclusiveLock())
 		{
 			lock.writeLock().unlock();
+			if (lock.getReadHoldCount() > 0)
+			{
+				lock.readLock().unlock();
+			}
 		}
 		else
 		{

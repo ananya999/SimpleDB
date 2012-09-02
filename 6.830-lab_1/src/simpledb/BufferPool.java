@@ -283,7 +283,7 @@ public class BufferPool {
     private synchronized  void evictPage() throws DbException
     {
         boolean pageEvicted = false;
-        LockManager lm = LockManager.getInstance();
+        //LockManager lm = LockManager.getInstance();
         try 
         {
         	for (PageId nextId : queue) 
@@ -291,7 +291,7 @@ public class BufferPool {
         		// try evict the page if not dirty.
         		if (tryEvict(nextId))
         		{
-        			lm.evictPage(nextId);
+        			//lm.evictPage(nextId);
         			pageEvicted = true;
         			break;
         		}

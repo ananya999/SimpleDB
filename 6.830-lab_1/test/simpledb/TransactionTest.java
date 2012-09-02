@@ -49,10 +49,11 @@ public class TransactionTest extends TestUtil.CreateHeapFile {
 
     // forget about locks associated to tid, so they don't conflict with
     // test cases
-    bp.getPage(tid, p0, Permissions.READ_WRITE).markDirty(true, tid);
-    bp.getPage(tid, p1, Permissions.READ_WRITE).markDirty(true, tid);
-    bp.getPage(tid, p2, Permissions.READ_WRITE).markDirty(true, tid);
-    bp.flushAllPages();
+//    bp.getPage(tid, p0, Permissions.READ_WRITE).markDirty(true, tid);
+//    bp.getPage(tid, p1, Permissions.READ_WRITE).markDirty(true, tid);
+//    bp.getPage(Id, p2, Permissions.READ_WRITE).markDirty(true, tid);
+//    bp.flushAllPages();
+    bp.transactionComplete(tid);
     bp = Database.resetBufferPool(BufferPool.DEFAULT_PAGES);
   }
 

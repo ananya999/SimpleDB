@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import simpledb.TransactionId;
-import simpledb.page.HeapPageId;
 import simpledb.page.PageId;
 
 public class LockManager {
@@ -22,7 +21,13 @@ public class LockManager {
 	}
 	public Set<PageId> getLockedPages(TransactionId tid)
 	{
-		return new HashSet(transactionMap.get(tid));
+		
+		HashSet<PageId> pages = transactionMap.get(tid);
+		if (pages == null)
+		{
+			pages = new HashSet<PageId>();
+		}
+		return new HashSet<PageId>(pages);
 	}
 	
 	public static LockManager getInstance()
