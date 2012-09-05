@@ -384,14 +384,16 @@ public class HeapPage implements Page , Iterable<Tuple> {
     }
     
     public static void main(String[] args) {
-    	System.out.println((int)Math.ceil((double)337/8));
-    	System.out.println(8 % 8);
+    	int x = 3;
+    	System.out.println(x++);
+    	
+    	//System.out.println(++x);
 	}
     
     public class SlotInterator implements Iterator<Tuple>
     {
     	
-    	private int curpos = -1;
+    	private int curpos = 0;
     	private boolean hasNext = false;
 		@Override
 		public boolean hasNext() 
@@ -406,15 +408,24 @@ public class HeapPage implements Page , Iterable<Tuple> {
 		@Override
 		public Tuple next() 
 		{
-			hasNext = false;
-			return tuples[curpos];
+			Tuple next = null;
+			for (; curpos < tuples.length;)
+			{
+				if (getSlot(curpos))
+				{
+					next = tuples[curpos++];
+					break;
+				}
+			}
+			return next;
 		}
 		private boolean hasNonEmptySlots() 
 		{
 			boolean filled = false;
-			for (; curpos + 1 < tuples.length;)
+			int _curpos = curpos;
+			for (; _curpos < tuples.length;)
 			{
-				if (getSlot(++curpos))
+				if (getSlot(_curpos++))
 				{
 					hasNext = true;
 					filled = true;
