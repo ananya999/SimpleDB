@@ -392,16 +392,10 @@ public class HeapPage implements Page , Iterable<Tuple> {
     
     public class SlotInterator implements Iterator<Tuple>
     {
-    	
     	private int curpos = 0;
-    	private boolean hasNext = false;
 		@Override
 		public boolean hasNext() 
 		{
-			if (hasNext)
-			{
-				return true;
-			}
 			return hasNonEmptySlots();
 		}
 
@@ -416,6 +410,10 @@ public class HeapPage implements Page , Iterable<Tuple> {
 					next = tuples[curpos++];
 					break;
 				}
+				else
+				{
+					curpos++;
+				}
 			}
 			return next;
 		}
@@ -427,7 +425,6 @@ public class HeapPage implements Page , Iterable<Tuple> {
 			{
 				if (getSlot(_curpos++))
 				{
-					hasNext = true;
 					filled = true;
 					break;
 				}

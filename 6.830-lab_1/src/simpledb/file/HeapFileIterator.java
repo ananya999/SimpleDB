@@ -36,7 +36,7 @@ public class HeapFileIterator implements DbFileIterator {
 		{
 			isOpen = true;
 			currentPageId = new HeapPageId(heapFile.getId(), 0);
-			HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY);
+			HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY,null);
 			currentTupleIter = page.iterator();
 		}
 		else
@@ -69,7 +69,7 @@ public class HeapFileIterator implements DbFileIterator {
 			if (currentPageId.pageno() < heapFile.numPages() - 1)
 			{
 				currentPageId = new HeapPageId(heapFile.getId(), currentPageId.pageno() + 1);
-				HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY);
+				HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY,null);
 				currentTupleIter = page.iterator();
 			}
 		}
@@ -84,7 +84,7 @@ public class HeapFileIterator implements DbFileIterator {
 			throw new NoSuchElementException("this DbFileIterator is closed");
 		}
 		currentPageId = new HeapPageId(heapFile.getId(), 0);
-		HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY);
+		HeapPage page = (HeapPage) pool.getPage(tid, currentPageId, Permissions.READ_ONLY,null);
 		currentTupleIter = page.iterator();
 	}
 

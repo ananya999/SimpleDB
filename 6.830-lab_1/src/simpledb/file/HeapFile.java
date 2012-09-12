@@ -158,7 +158,7 @@ public class HeapFile implements DbFile {
 		for (int i = 0; i < numPages(); i++) 
 		{
 			PageId pid = new HeapPageId(getId(), i);
-			HeapPage page = (HeapPage)bufferPool.getPage(tid, pid, Permissions.READ_WRITE);
+			HeapPage page = (HeapPage)bufferPool.getPage(tid, pid, Permissions.READ_WRITE, "insert");
 			if (page.getNumEmptySlots() > 0)
 			{
 				needNewPage = false;
@@ -213,7 +213,7 @@ public class HeapFile implements DbFile {
 		PageId pageId = record.getPageId();
 		BufferPool bufferPool = Database.getBufferPool();
 		HeapPage p = null;
-		p = (HeapPage)bufferPool.getPage(tid, pageId, Permissions.READ_WRITE);
+		p = (HeapPage)bufferPool.getPage(tid, pageId, Permissions.READ_WRITE,"delete");
 		p.deleteTuple(t);
 		return p;
 	}

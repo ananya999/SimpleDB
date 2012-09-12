@@ -11,7 +11,7 @@ import simpledb.page.PageId;
 /**
  * non re-entrant read-write lock
  * 
- * @author daniela
+ * @author felix
  *
  */
 public class DbLock 
@@ -27,31 +27,46 @@ public class DbLock
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void lock(TransactionId tid, Permissions permission)
+	public void lock(TransactionId tid, Permissions permission,String action)
 	{
 		if (permission == Permissions.READ_ONLY)
 		{
-			if (lock.getReadHoldCount() == 0) 
+			if (lock.getReadHoldCount() == 0)
 			{
-				lock.readLock().lock();
-				LockManager.getInstance().addLockedPage(tid, pid);
-				transactions.add(tid);
+				try
+				{
+					lock.readLock().lockInterruptibly(); // call to lockInterruptibly() instead
+					LockManager.getInstance().addLockedPage(tid, pid);
+					transactions.add(tid);
+				}
+				catch(InterruptedException e)
+				{
+					
+				}
 			}
 		}
 		else
 		{
 			if (lock.getWriteHoldCount() == 0)
 			{
-				if (lock.writeLock().tryLock()) 
+				if (lock.writeLock().tryLock())
 				{
 					LockManager.getInstance().addLockedPage(tid, pid);
 					transactions.add(tid);
 				}
 				else
 				{
-					if (!tryUpgradeLock(tid))
+					if (!tryUpgradeLock(tid,action))
 					{
-						lock.writeLock().lock();
+						try
+						{
+							lock.writeLock().lockInterruptibly();
+							System.out.println("lock " + Thread.currentThread().getName() + " "  + action+ " "  + tid + " " + pid);
+						}
+						catch(InterruptedException e)
+						{
+							
+						}
 					}
 				}
 			}
@@ -86,20 +101,16 @@ public class DbLock
 		return lock.isWriteLocked();
 	}
 	
-	private synchronized boolean tryUpgradeLock(TransactionId tid)
+	private synchronized boolean tryUpgradeLock(TransactionId tid, String action)
 	{
-		if (!isExclusiveLock() && isUpgradeLockPermited(tid))
+		if (!isExclusiveLock())
 		{
-			lock.readLock().unlock();
-			lock.writeLock().lock();
-			return true;
+			if(lock.getReadHoldCount() > 0)
+			{
+				lock.readLock().unlock();
+				return lock.writeLock().tryLock();
+			}
 		}
 		return false;
 	}
-	
-	private  boolean isUpgradeLockPermited(TransactionId tid) 
-	{
-		return transactions.size() == 1 && transactions.contains(tid);
-	}
-	
 }

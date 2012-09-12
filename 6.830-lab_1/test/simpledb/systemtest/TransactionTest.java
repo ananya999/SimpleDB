@@ -36,8 +36,7 @@ import simpledb.tuple.Tuple;
 public class TransactionTest extends SimpleDbTestBase {
     // Wait up to 10 minutes for the test to complete
     private static final int TIMEOUT_MILLIS = 10 * 60 * 1000;
-    private void validateTransactions(int threads)
-            throws DbException, TransactionAbortedException, IOException {
+    private void validateTransactions(int threads) throws DbException, TransactionAbortedException, IOException {
         // Create a table with a single integer value = 0
         HashMap<Integer, Integer> columnSpecification = new HashMap<Integer, Integer>();
         columnSpecification.put(0, 0);
@@ -51,21 +50,28 @@ public class TransactionTest extends SimpleDbTestBase {
         }
 
         long stopTestTime = System.currentTimeMillis() + TIMEOUT_MILLIS;
-        for (XactionTester tester : list) {
+        for (XactionTester tester : list) 
+        {
             long timeout = stopTestTime - System.currentTimeMillis();
-            if (timeout <= 0) {
+            if (timeout <= 0) 
+            {
                 fail("Timed out waiting for transaction to complete");
             }
-            try {
+            try 
+            {
                 tester.join(timeout);
-            } catch (InterruptedException e) {
+            } 
+            catch (InterruptedException e) 
+            {
                 throw new RuntimeException(e);
             }
-            if (tester.isAlive()) {
+            if (tester.isAlive()) 
+            {
                 fail("Timed out waiting for transaction to complete");
             }
 
-            if (tester.exception != null) {
+            if (tester.exception != null) 
+            {
                 // Rethrow any exception from a child thread
                 assert tester.exception != null;
                 throw new RuntimeException("Child thread threw an exception.", tester.exception);
@@ -96,13 +102,16 @@ public class TransactionTest extends SimpleDbTestBase {
         }
 
         public void run() {
-            try {
+            try 
+            {
                 // Try to increment the value until we manage to successfully commit
-                while (true) {
+                while (true) 
+                {
                     // Wait for all threads to be ready
                     latch.await();
                     Transaction tr = new Transaction();
-                    try {
+                    try 
+                    {
                         tr.start();
                         SeqScan ss1 = new SeqScan(tr.getId(), tableId, "");
                         SeqScan ss2 = new SeqScan(tr.getId(), tableId, "");
@@ -148,7 +157,9 @@ public class TransactionTest extends SimpleDbTestBase {
 
                         tr.commit();
                         break;
-                    } catch (TransactionAbortedException te) {
+                    } 
+                    catch (TransactionAbortedException te) 
+                    {
                         //System.out.println("thread " + tr.getId() + " killed");
                         // give someone else a chance: abort the transaction
                         tr.transactionComplete(true);
@@ -156,16 +167,23 @@ public class TransactionTest extends SimpleDbTestBase {
                     }
                 }
                 //System.out.println("thread " + id + " done");
-            } catch (Exception e) {
+            } 
+            catch (Exception e) 
+            {
                 // Store exception for the master thread to handle
                 exception = e;
             }
             
-            try {
+            try 
+            {
                 latch.notParticipating();
-            } catch (InterruptedException e) {
+            } 
+            catch (InterruptedException e) 
+            {
                 throw new RuntimeException(e);
-            } catch (BrokenBarrierException e) {
+            } 
+            catch (BrokenBarrierException e) 
+            {
                 throw new RuntimeException(e);
             }
             completed = true;

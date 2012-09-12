@@ -68,11 +68,11 @@ public class BufferPool {
      * @param pid the ID of the requested page
      * @param perm the requested permissions on the page
      */
-    public  Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException, DbException {
+    public  Page getPage(TransactionId tid, PageId pid, Permissions perm, String action) throws TransactionAbortedException, DbException {
     	try 
     	{
     		LockManager lm = LockManager.getInstance();
-    		lm.getLock(pid).lock(tid, perm);
+    		lm.getLock(pid).lock(tid, perm,action);
     		Page bufferedPage = bufferedPages.get(pid);
 			if (bufferedPage == null)
 			{
