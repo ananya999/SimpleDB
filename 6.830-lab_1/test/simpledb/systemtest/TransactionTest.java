@@ -115,7 +115,9 @@ public class TransactionTest extends SimpleDbTestBase {
                         tr.start();
                         SeqScan ss1 = new SeqScan(tr.getId(), tableId, "");
                         SeqScan ss2 = new SeqScan(tr.getId(), tableId, "");
-
+                        
+                        lockByInsertDummy(tr);
+                        
                         // read the value out of the table
                         Query q1 = new Query(ss1, tr.getId());
                         q1.start();
@@ -188,6 +190,23 @@ public class TransactionTest extends SimpleDbTestBase {
             }
             completed = true;
         }
+
+		private void lockByInsertDummy(Transaction tr) throws DbException,
+				IOException, TransactionAbortedException {
+			Tuple _t = new Tuple(SystemTestUtil.SINGLE_INT_DESCRIPTOR);
+			_t.setField(0, new IntField(0));
+			
+			HashSet<Tuple> _hs = new HashSet<Tuple>();
+			_hs.add(_t);
+			TupleIterator _ti = new TupleIterator(_t.getTupleDesc(), _hs);
+
+			// insert this new tuple into the table
+			Insert _insOp = new Insert(tr.getId(), _ti, tableId);
+			Query _q = new Query(_insOp, tr.getId());
+			_q.start();
+			_q.next();
+			_q.close();
+		}
     }
     
     private static class ModifiableCyclicBarrier {
