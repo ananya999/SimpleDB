@@ -3,14 +3,10 @@ package simpledb;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import simpledb.exceptions.DbException;
 import simpledb.exceptions.TransactionAbortedException;
@@ -68,11 +64,11 @@ public class BufferPool {
      * @param pid the ID of the requested page
      * @param perm the requested permissions on the page
      */
-    public  Page getPage(TransactionId tid, PageId pid, Permissions perm, String action) throws TransactionAbortedException, DbException {
+    public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException, DbException {
     	try 
     	{
     		LockManager lm = LockManager.getInstance();
-    		lm.getLock(pid).lock(tid, perm,action);
+    		lm.getLock(pid).lock(tid, perm);
     		Page bufferedPage = bufferedPages.get(pid);
 			if (bufferedPage == null)
 			{
@@ -80,12 +76,12 @@ public class BufferPool {
 				bufferedPage = dbFile.readPage(pid);
 				bufferedPage.markDirty(false, null);
 			}
-			updateQueue(pid);				
-			bufferedPages.put(pid, bufferedPage);
-			if (bufferedPages.size() > numPages)
+			if (isEvicationRequered())
 			{
 				evictPage();
 			}
+			addToQueue(pid);				
+			bufferedPages.put(pid, bufferedPage);
 			return bufferedPage;
 		} 
     	catch (NoSuchElementException e) 
@@ -95,7 +91,13 @@ public class BufferPool {
         
     }
 	
-	private void updateQueue(PageId pid) {
+	private boolean isEvicationRequered() 
+	{
+		
+		return queue.size() == numPages;
+	}
+
+	private void addToQueue(PageId pid) {
 		if (!queue.contains(pid))
 		{
 			queue.add(pid);
@@ -299,7 +301,7 @@ public class BufferPool {
 			}
 	        if (!pageEvicted)
 	        {
-	        	throw new DbException("all pages in the buffer pool are dirty");
+	        	throw new DbException("evacation error : all pages in the buffer pool are dirty");
 	        }
 		} 
         catch (IOException e) 

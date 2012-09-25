@@ -76,7 +76,7 @@ public class HeapPageId implements PageId {
 
 	@Override
 	public String toString() {
-		return "HeapPageId [m_tableId=" + m_tableId + ", m_pgNo=" + m_pgNo
+		return super.toString() + " HeapPageId [m_tableId=" + m_tableId + ", m_pgNo=" + m_pgNo
 				+ "]";
 	}
 

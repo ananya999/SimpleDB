@@ -27,7 +27,7 @@ public class DbLock
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void lock(TransactionId tid, Permissions permission,String action)
+	public void lock(TransactionId tid, Permissions permission)
 	{
 		if (permission == Permissions.READ_ONLY)
 		{
@@ -36,6 +36,7 @@ public class DbLock
 				try
 				{
 					lock.readLock().lockInterruptibly(); // call to lockInterruptibly() instead
+					//System.out.println("2 " + Thread.currentThread().getName());
 					LockManager.getInstance().addLockedPage(tid, pid);
 					transactions.add(tid);
 				}
@@ -51,17 +52,18 @@ public class DbLock
 			{
 				if (lock.writeLock().tryLock())
 				{
+					//System.out.println("1 " + Thread.currentThread().getName());
+					//System.out.println(lock);
 					LockManager.getInstance().addLockedPage(tid, pid);
 					transactions.add(tid);
 				}
 				else
 				{
-					if (!tryUpgradeLock(tid,action))
+					if (!tryUpgradeLock(tid))
 					{
 						try
 						{
 							lock.writeLock().lockInterruptibly();
-							System.out.println("lock " + Thread.currentThread().getName() + " "  + action+ " "  + tid + " " + pid);
 						}
 						catch(InterruptedException e)
 						{
@@ -75,6 +77,9 @@ public class DbLock
 	
 	public void unlock(TransactionId tid)
 	{
+		transactions.remove(tid);
+		LockManager.getInstance().removeLockedPage(tid, pid);
+		
 		if(isExclusiveLock())
 		{
 			lock.writeLock().unlock();
@@ -87,8 +92,6 @@ public class DbLock
 		{
 			lock.readLock().unlock();
 		}
-		transactions.remove(tid);
-		LockManager.getInstance().removeLockedPage(tid, pid);
 	}
 	
 	public boolean hasLock(TransactionId tid)
@@ -101,7 +104,7 @@ public class DbLock
 		return lock.isWriteLocked();
 	}
 	
-	private synchronized boolean tryUpgradeLock(TransactionId tid, String action)
+	private synchronized boolean tryUpgradeLock(TransactionId tid)
 	{
 		if (!isExclusiveLock())
 		{

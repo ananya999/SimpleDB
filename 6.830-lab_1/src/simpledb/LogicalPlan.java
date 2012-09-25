@@ -1,15 +1,10 @@
 package simpledb;
-import java.util.Vector;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.io.File;
 import java.util.ArrayList;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.HashSet;
-
-import java.awt.*;
+import java.util.Vector;
 
 import simpledb.aggregates.Aggregator;
 import simpledb.exceptions.ParsingException;

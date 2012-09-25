@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -158,7 +157,7 @@ public class HeapFile implements DbFile {
 		for (int i = 0; i < numPages(); i++) 
 		{
 			PageId pid = new HeapPageId(getId(), i);
-			HeapPage page = (HeapPage)bufferPool.getPage(tid, pid, Permissions.READ_WRITE, "insert");
+			HeapPage page = (HeapPage)bufferPool.getPage(tid, pid, Permissions.READ_WRITE);
 			if (page.getNumEmptySlots() > 0)
 			{
 				needNewPage = false;
@@ -213,7 +212,7 @@ public class HeapFile implements DbFile {
 		PageId pageId = record.getPageId();
 		BufferPool bufferPool = Database.getBufferPool();
 		HeapPage p = null;
-		p = (HeapPage)bufferPool.getPage(tid, pageId, Permissions.READ_WRITE,"delete");
+		p = (HeapPage)bufferPool.getPage(tid, pageId, Permissions.READ_WRITE);
 		p.deleteTuple(t);
 		return p;
 	}

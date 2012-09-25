@@ -3,14 +3,11 @@ package simpledb.operators;
 import java.util.NoSuchElementException;
 
 import simpledb.BufferPool;
-import simpledb.Catalog;
 import simpledb.Database;
 import simpledb.Debug;
 import simpledb.TransactionId;
 import simpledb.exceptions.DbException;
 import simpledb.exceptions.TransactionAbortedException;
-import simpledb.file.DbFile;
-import simpledb.file.HeapFile;
 import simpledb.tuple.IntField;
 import simpledb.tuple.Tuple;
 import simpledb.tuple.TupleDesc;

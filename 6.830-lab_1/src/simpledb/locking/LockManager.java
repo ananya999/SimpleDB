@@ -14,14 +14,15 @@ public class LockManager {
 	private Map<TransactionId, HashSet<PageId>> transactionMap = new HashMap <TransactionId, HashSet<PageId>>();
 	// lock table.
 	private Map<PageId, DbLock> lockMap= new HashMap<PageId, DbLock>();
-	private static LockManager lockManager = null;
+	private DeadlockDetective detective;
+	private static LockManager lockManager = new LockManager();
 	
 	private LockManager() 
 	{
+		detective = new DeadlockDetective();
 	}
 	public Set<PageId> getLockedPages(TransactionId tid)
 	{
-		
 		HashSet<PageId> pages = transactionMap.get(tid);
 		if (pages == null)
 		{
@@ -32,19 +33,15 @@ public class LockManager {
 	
 	public static LockManager getInstance()
 	{
-		if (lockManager == null)
-		{
-			lockManager = new LockManager();
-		}
 		return lockManager;
 	}
 	
     /**
-	 *return DbLock	
-	 *put lock if not already exist in lock table.
+	 * return DbLock	
+	 * put lock if not already exist in lock table.
      *  
      */
-	public DbLock getLock(PageId pid) 
+	public synchronized DbLock getLock(PageId pid) 
 	{
 		DbLock lock = lockMap.get(pid);
 		if(lock == null)
@@ -92,10 +89,4 @@ public class LockManager {
 		}
 		
 	}
-	
-	public void evictPage(PageId pid)
-	{
-		lockMap.remove(pid);
-	}
-	
 }

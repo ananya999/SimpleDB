@@ -1,22 +1,6 @@
 package simpledb.aggregates;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import simpledb.Utility;
-import simpledb.aggregates.Aggregator.Op;
-import simpledb.operators.Aggregate;
 import simpledb.operators.DbIterator;
-import simpledb.operators.TupleArrayIterator;
-import simpledb.tuple.Field;
-import simpledb.tuple.IntField;
 import simpledb.tuple.Tuple;
 import simpledb.tuple.Type;
 

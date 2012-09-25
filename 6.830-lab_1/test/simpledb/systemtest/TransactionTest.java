@@ -124,6 +124,7 @@ public class TransactionTest extends SimpleDbTestBase {
                         Tuple tup = q1.next();
                         IntField intf = (IntField) tup.getField(0);
                         int i = intf.getValue();
+                        //System.out.println(i);
 
                         // create a Tuple so that Insert can insert this new value
                         // into the table.
@@ -194,7 +195,7 @@ public class TransactionTest extends SimpleDbTestBase {
 		private void lockByInsertDummy(Transaction tr) throws DbException,
 				IOException, TransactionAbortedException {
 			Tuple _t = new Tuple(SystemTestUtil.SINGLE_INT_DESCRIPTOR);
-			_t.setField(0, new IntField(0));
+			_t.setField(0, new IntField(-1));
 			
 			HashSet<Tuple> _hs = new HashSet<Tuple>();
 			_hs.add(_t);
@@ -277,8 +278,7 @@ public class TransactionTest extends SimpleDbTestBase {
         validateTransactions(10);
     }
 
-    @Test public void testAllDirtyFails()
-            throws IOException, DbException, TransactionAbortedException {
+    @Test public void testAllDirtyFails() throws IOException, DbException, TransactionAbortedException {
         // Allocate a file with ~10 pages of data
         HeapFile f = SystemTestUtil.createRandomHeapFile(2, 512*10, null, null);
         Database.resetBufferPool(1);
@@ -291,10 +291,12 @@ public class TransactionTest extends SimpleDbTestBase {
         EvictionTest.insertRow(f, t);
 
         // Scanning the table must fail because it can't evict the dirty page
-        try {
+        try 
+        {
             EvictionTest.findMagicTuple(f, t);
             fail("Expected scan to run out of available buffer pages");
-        } catch (DbException e) {}
+        } 
+        catch (DbException e) {}
         t.commit();
     }
 

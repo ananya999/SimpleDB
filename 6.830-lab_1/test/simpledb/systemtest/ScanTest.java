@@ -1,16 +1,7 @@
 package simpledb.systemtest;
 
-import simpledb.exceptions.DbException;
-import simpledb.exceptions.TransactionAbortedException;
-import simpledb.file.HeapFile;
-import simpledb.operators.SeqScan;
-import simpledb.page.Page;
-import simpledb.page.PageId;
-import simpledb.systemtest.SystemTestUtil;
-import simpledb.tuple.Tuple;
-import simpledb.tuple.TupleDesc;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,10 +9,20 @@ import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import simpledb.*;
+import simpledb.BufferPool;
+import simpledb.Database;
+import simpledb.TransactionId;
+import simpledb.Utility;
+import simpledb.exceptions.DbException;
+import simpledb.exceptions.TransactionAbortedException;
+import simpledb.file.HeapFile;
+import simpledb.operators.SeqScan;
+import simpledb.page.Page;
+import simpledb.page.PageId;
+import simpledb.tuple.Tuple;
+import simpledb.tuple.TupleDesc;
 
 /**
  * Dumps the contents of a table.

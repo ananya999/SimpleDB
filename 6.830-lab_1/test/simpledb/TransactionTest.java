@@ -63,12 +63,12 @@ public class TransactionTest extends TestUtil.CreateHeapFile {
    * during transactionComplete().
    */
   @Test public void attemptTransactionTwice() throws Exception {
-    bp.getPage(tid1, p0, Permissions.READ_ONLY, null);
-    bp.getPage(tid1, p1, Permissions.READ_WRITE, null);
+    bp.getPage(tid1, p0, Permissions.READ_ONLY);
+    bp.getPage(tid1, p1, Permissions.READ_WRITE);
     bp.transactionComplete(tid1, true);
 
-    bp.getPage(tid2, p0, Permissions.READ_WRITE, null);
-    bp.getPage(tid2, p0, Permissions.READ_WRITE,null);
+    bp.getPage(tid2, p0, Permissions.READ_WRITE);
+    bp.getPage(tid2, p0, Permissions.READ_WRITE);
   }
 
   /**
@@ -77,7 +77,7 @@ public class TransactionTest extends TestUtil.CreateHeapFile {
    * that abort reverts pages to their previous on-disk state.
    */
   public void testTransactionComplete(boolean commit) throws Exception {
-    HeapPage p = (HeapPage) bp.getPage(tid1, p2, Permissions.READ_WRITE, null);
+    HeapPage p = (HeapPage) bp.getPage(tid1, p2, Permissions.READ_WRITE);
 
     Tuple t = Utility.getHeapTuple(new int[] { 6, 830 });
     t.setRecordId(new RecordId(p2, 1));
@@ -88,7 +88,7 @@ public class TransactionTest extends TestUtil.CreateHeapFile {
 
     // now, flush the buffer pool and access the page again from disk.
     bp = Database.resetBufferPool(BufferPool.DEFAULT_PAGES);
-    p = (HeapPage) bp.getPage(tid2, p2, Permissions.READ_WRITE,null);
+    p = (HeapPage) bp.getPage(tid2, p2, Permissions.READ_WRITE);
     Iterator<Tuple> it = p.iterator();
 
     boolean found = false;

@@ -67,8 +67,7 @@ public class EvictionTest extends SimpleDbTestBase {
         insert.close();
     }
 
-    public static boolean findMagicTuple(HeapFile f, Transaction t)
-            throws DbException, TransactionAbortedException {
+    public static boolean findMagicTuple(HeapFile f, Transaction t) throws DbException, TransactionAbortedException {
         SeqScan ss = new SeqScan(t.getId(), f.getId(), "");
         boolean found = false;
         ss.open();
