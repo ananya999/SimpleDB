@@ -1,11 +1,10 @@
 package simpledb.locking;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import simpledb.Permissions;
 import simpledb.TransactionId;
+import simpledb.exceptions.TransactionAbortedException;
 import simpledb.page.PageId;
 
 /**
@@ -17,17 +16,15 @@ import simpledb.page.PageId;
 public class DbLock 
 {
 	private ReentrantReadWriteLock lock;
-	private Set<TransactionId> transactions;
 	private PageId pid;
 	
 	public DbLock(PageId pid) {
 		this.pid = pid;
 		lock = new ReentrantReadWriteLock();
-		transactions = new HashSet<TransactionId>();
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void lock(TransactionId tid, Permissions permission)
+	public void lock(TransactionId tid, Permissions permission) throws TransactionAbortedException
 	{
 		if (permission == Permissions.READ_ONLY)
 		{
@@ -35,14 +32,11 @@ public class DbLock
 			{
 				try
 				{
-					lock.readLock().lockInterruptibly(); // call to lockInterruptibly() instead
-					//System.out.println("2 " + Thread.currentThread().getName());
-					LockManager.getInstance().addLockedPage(tid, pid);
-					transactions.add(tid);
+					lock.readLock().lockInterruptibly();
 				}
 				catch(InterruptedException e)
 				{
-					
+					throw new TransactionAbortedException(tid + " aborted");
 				}
 			}
 		}
@@ -50,14 +44,7 @@ public class DbLock
 		{
 			if (lock.getWriteHoldCount() == 0)
 			{
-				if (lock.writeLock().tryLock())
-				{
-					//System.out.println("1 " + Thread.currentThread().getName());
-					//System.out.println(lock);
-					LockManager.getInstance().addLockedPage(tid, pid);
-					transactions.add(tid);
-				}
-				else
+				if (!lock.writeLock().tryLock())
 				{
 					if (!tryUpgradeLock(tid))
 					{
@@ -67,7 +54,7 @@ public class DbLock
 						}
 						catch(InterruptedException e)
 						{
-							
+							throw new TransactionAbortedException(tid + " aborted");
 						}
 					}
 				}
@@ -77,9 +64,6 @@ public class DbLock
 	
 	public void unlock(TransactionId tid)
 	{
-		transactions.remove(tid);
-		LockManager.getInstance().removeLockedPage(tid, pid);
-		
 		if(isExclusiveLock())
 		{
 			lock.writeLock().unlock();
@@ -96,7 +80,7 @@ public class DbLock
 	
 	public boolean hasLock(TransactionId tid)
 	{
-		return transactions.contains(tid);
+		return false;
 	}
 	
 	private boolean isExclusiveLock()

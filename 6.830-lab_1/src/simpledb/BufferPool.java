@@ -47,6 +47,7 @@ public class BufferPool {
     {
     	this.numPages = numPages;
     	queue = new ArrayList<PageId>(numPages);
+    	LockManager.getInstance().reset();
     }
 
     /**
@@ -67,8 +68,14 @@ public class BufferPool {
     public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException, DbException {
     	try 
     	{
-    		LockManager lm = LockManager.getInstance();
-    		lm.getLock(pid).lock(tid, perm);
+    		LockManager lockManager = LockManager.getInstance();
+    		// first notify LockManager about the lock request.
+    		lockManager.addLockRequest(tid, pid);
+    		// try to get lock on the page 
+    		lockManager.getLock(pid).lock(tid, perm);
+    		// after the success notify the locked page about the the success to lock page.
+    		lockManager.addLockedPage(tid, pid);
+    		
     		Page bufferedPage = bufferedPages.get(pid);
 			if (bufferedPage == null)
 			{
@@ -152,8 +159,8 @@ public class BufferPool {
      */
     public void transactionComplete(TransactionId tid, boolean commit) throws IOException 
     {
-    	LockManager lm = LockManager.getInstance();
-    	Set<PageId> lockedPages = lm.getLockedPages(tid);
+    	LockManager lockManager = LockManager.getInstance();
+    	Set<PageId> lockedPages = lockManager.getLockedPages(tid);
     	for (PageId p : lockedPages) 
 		{
 	    	if (commit)
@@ -164,7 +171,11 @@ public class BufferPool {
 	    	{
 	    		restorePage(p);
 	    	}
-	    	lm.getLock(p).unlock(tid);	
+	    	// notify Lock Manager that this page not locked anymore by this pid.
+	    	LockManager.getInstance().removeLockedPage(tid, p);
+	    	
+	    	// unlock the page
+	    	lockManager.getLock(p).unlock(tid);
 		}
     }
 
@@ -221,10 +232,13 @@ public class BufferPool {
      * NB: Be careful using this routine -- it writes dirty data to disk so will
      *     break simpledb if running in NO STEAL mode.
      */
-    public synchronized void flushAllPages() throws IOException {
-        // some code goes here
-        // not necessary for lab1
-
+    public synchronized void flushAllPages() throws IOException 
+    {
+    	Set<PageId> keySet = bufferedPages.keySet();
+    	for (PageId pageId : keySet) 
+    	{
+    		flushPage(pageId);
+		}
     }
 
     /** Remove the specific page id from the buffer pool.

@@ -64,8 +64,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
    * Helper method to clean up the syntax of starting a LockGrabber thread.
    * The parameters pass through to the LockGrabber constructor.
    */
-  public TestUtil.LockGrabber startGrabber(TransactionId tid, PageId pid,
-      Permissions perm) {
+  public TestUtil.LockGrabber startGrabber(TransactionId tid, PageId pid, Permissions perm) {
 
     LockGrabber lg = new LockGrabber(tid, pid, perm);
     lg.start();
@@ -80,47 +79,52 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
   @Test public void testReadWriteDeadlock() throws Exception {
     System.out.println("testReadWriteDeadlock constructing deadlock:");
 
-    LockGrabber lg1Read = startGrabber(tid1, p0, Permissions.READ_ONLY); 
-    LockGrabber lg2Read = startGrabber(tid2, p1, Permissions.READ_ONLY); 
+    SimpleAction p0_read = new SimpleAction(p0, Permissions.READ_ONLY);
+    SimpleAction p1_read = new SimpleAction(p1, Permissions.READ_ONLY);
+    SimpleAction p1_write = new SimpleAction(p1, Permissions.READ_WRITE);
+    SimpleAction p0_write = new SimpleAction(p0, Permissions.READ_WRITE);
+    
+    LockGrabber lg1 = startGrabber(tid1, new SimpleAction[] {p0_read, p1_write}); 
+    LockGrabber lg2 = startGrabber(tid2, new SimpleAction[] {p1_read, p0_write}); 
 
-    // allow read locks to acquire
-    Thread.sleep(POLL_INTERVAL);
-
-    LockGrabber lg1Write = startGrabber(tid1, p1, Permissions.READ_WRITE);
-    LockGrabber lg2Write = startGrabber(tid2, p0, Permissions.READ_WRITE);
-
-    while (true) {
+    while (true) 
+    {
       Thread.sleep(POLL_INTERVAL);
 
-      assertFalse(lg1Write.acquired() && lg2Write.acquired());
-      if (lg1Write.acquired() && !lg2Write.acquired()) break;
-      if (!lg1Write.acquired() && lg2Write.acquired()) break;
+      assertFalse(lg1.acquired() && lg2.acquired());
+      if (lg1.acquired() && !lg2.acquired()) break;
+      if (!lg1.acquired() && lg2.acquired()) break;
 
-      if (lg1Write.getError() != null) {
-        lg1Read.stop(); lg1Write.stop();
+      if (lg1.getError() != null) {
+        lg1.stop(); lg1.stop();
         bp.transactionComplete(tid1);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
         tid1 = new TransactionId();
-        lg1Read = startGrabber(tid1, p0, Permissions.READ_ONLY);
-        lg1Write = startGrabber(tid1, p1, Permissions.READ_WRITE);
+        lg1 = startGrabber(tid1, new SimpleAction[] {p0_read, p1_write});
       }
 
-      if (lg2Write.getError() != null) {
-        lg2Read.stop(); lg2Write.stop();
+      if (lg2.getError() != null) {
+        lg2.stop(); lg2.stop();
         bp.transactionComplete(tid2);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
         tid2 = new TransactionId();
-        lg2Read = startGrabber(tid2, p1, Permissions.READ_ONLY);
-        lg2Write = startGrabber(tid2, p0, Permissions.READ_WRITE);
+        lg2 = startGrabber(tid2, new SimpleAction[] {p1_read, p0_write});
       }
     }
 
     System.out.println("testReadWriteDeadlock resolved deadlock");
   }
 
-  /**
+  private LockGrabber startGrabber(TransactionId tid, SimpleAction[] simpleActions) 
+  {
+	  LockGrabber lg = new LockGrabber(tid, simpleActions);
+	  lg.start();
+	  return lg;
+  }
+
+/**
    * Not-so-unit test to construct a deadlock situation.
    * t1 acquires p0.write; t2 acquires p1.write; t1 attempts p1.write; t2
    * attempts p0.write.

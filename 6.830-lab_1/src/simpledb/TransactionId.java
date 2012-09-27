@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TransactionId {
     static AtomicLong counter = new AtomicLong(0);
     long myid;
-
+    Thread t;
     
 
 	public TransactionId() {
@@ -18,6 +18,7 @@ public class TransactionId {
     public long getId() {
         return myid;
     }
+    
 
     public boolean equals(Object tid) {
         return ((TransactionId)tid).myid == myid;
@@ -30,5 +31,15 @@ public class TransactionId {
     @Override
 	public String toString() {
 		return "TransactionId [myid=" + myid + "]";
+	}
+
+	public Thread getThread() 
+	{
+		return t;
+	}
+
+	public void setThread(Thread currentThread) 
+	{
+		t = currentThread;
 	}
 }

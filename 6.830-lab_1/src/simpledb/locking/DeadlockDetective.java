@@ -1,29 +1,39 @@
 package simpledb.locking;
 
-import simpledb.TransactionId;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
-/**
- * @author felix
- * 
- * implement "waits-for graph" to detect deadlock cycles. 
- * The nodes correspond to active transactions, 
- * and there is an arc from Ti to 
- * Tj if (and only if) Ti is waiting for Tj to release a lock.
- *
- */
+import simpledb.TransactionId;
 
 public class DeadlockDetective 
 {
-	
-	
-	
-	public void addEdge(TransactionId tid1 , TransactionId tid2)
-	{
-		
-	}
-	
-	public void removeEdge(TransactionId tid1 , TransactionId tid2)
-	{
-		
-	}
+    Timer timer;
+    DeadlockDependencyList dependencyList;
+
+    public DeadlockDetective(DeadlockDependencyList list) {
+        timer = new Timer();
+        dependencyList = list;
+    }
+    
+    public void init()
+    {
+    	timer.schedule(new DeadlockDetectiveTask(),0 , 5*1000);
+    }
+
+    class DeadlockDetectiveTask extends TimerTask 
+    {
+
+		@Override
+		public void run() 
+		{
+			LockManager lockManager = LockManager.getInstance();
+			Set<TransactionId> conflictingTransactions = dependencyList.getConflictingTransactions();
+			TransactionId victim = lockManager.getDeadlockVictim(conflictingTransactions);
+			if (victim != null)
+			{
+				victim.getThread().interrupt();
+			}
+		}
+    }
 }

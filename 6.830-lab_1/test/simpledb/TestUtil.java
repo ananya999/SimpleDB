@@ -329,6 +329,7 @@ public class TestUtil {
         Exception error;
         Object alock;
         Object elock;
+        SimpleAction[] actions;
 
         /**
          * @param tid the transaction on whose behalf we want to acquire the lock
@@ -344,12 +345,27 @@ public class TestUtil {
             this.alock = new Object();
             this.elock = new Object();
         }
+        
+        public LockGrabber(TransactionId tid, SimpleAction[] actions)
+        {
+        	this.actions = actions;
+        	this.tid = tid;
+        	this.alock = new Object();
+            this.elock = new Object();
+        }
 
         public void run() {
             try 
             {
-                Database.getBufferPool().getPage(tid, pid, perm);
-                synchronized(alock) 
+                tid.setThread(Thread.currentThread());
+            	for (SimpleAction action : actions) 
+            	{
+            		Database.getBufferPool().getPage(tid, action.getPid(), action.getPermission());
+            		// allow read locks to acquire
+            	    Thread.sleep(100);
+				}
+            	
+            	synchronized(alock) 
                 {
                     acquired = true;
                 }
