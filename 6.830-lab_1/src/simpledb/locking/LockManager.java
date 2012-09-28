@@ -66,7 +66,7 @@ public class LockManager {
 	}
 	
 	/**
-	 * called by DbLock on unlock
+	 * 
 	 * 
 	 * @param tid
 	 * @param pid
@@ -90,7 +90,7 @@ public class LockManager {
 	}
 	
 	/**
-	 * called by DbLock on lock
+	 * 
 	 * 
 	 * @param tid
 	 * @param pid

@@ -18,7 +18,7 @@ public class DeadlockDetective
     
     public void init()
     {
-    	timer.schedule(new DeadlockDetectiveTask(),0 , 5*1000);
+    	timer.schedule(new DeadlockDetectiveTask(),5*1000 , 5*1000);
     }
 
     class DeadlockDetectiveTask extends TimerTask 
