@@ -95,15 +95,15 @@ public class LockManager {
 	 * @param tid
 	 * @param pid
 	 */
-	public synchronized void addLockedPage(TransactionId tid, PageId pid)
+	public void addLockedPage(TransactionId tid, PageId pid)
 	{
-		removeFromDependecyList(tid, pid);
-		addTransactionMap(tid, pid);
 		addPageIdMap(tid, pid);
+		addTransactionMap(tid, pid);
+		removeFromDependecyList(tid, pid);
 		
 	}
 	
-	public synchronized void addLockRequest(TransactionId tid, PageId pid) 
+	public void addLockRequest(TransactionId tid, PageId pid) 
 	{
 		addToDependecyList(tid, pid);
 	}
@@ -133,6 +133,7 @@ public class LockManager {
 			{
 				if (!tid.equals(granted))
 				{
+					System.out.println("remove : " + tid.toString() + granted);
 					dependencyList.removeEdge(tid, granted);
 				}
 			}
@@ -147,6 +148,7 @@ public class LockManager {
 			{
 				if (!tid.equals(granted))
 				{
+					System.out.println("add : " + tid.toString() + granted);
 					dependencyList.addEdge(tid, granted);
 				}
 			}

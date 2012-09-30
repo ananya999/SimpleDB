@@ -11,6 +11,7 @@ import java.util.Set;
 import simpledb.exceptions.DbException;
 import simpledb.exceptions.TransactionAbortedException;
 import simpledb.file.DbFile;
+import simpledb.locking.DbLock;
 import simpledb.locking.LockManager;
 import simpledb.page.Page;
 import simpledb.page.PageId;
@@ -27,7 +28,7 @@ import simpledb.tuple.Tuple;
 public class BufferPool {
     /** Bytes per page, including header. */
     public static final int PAGE_SIZE = 4096; // 4k
-
+    public Object lock = new Object();
     /** Default number of pages passed to the constructor. This is used by
     other classes. BufferPool should use the numPages argument to the
     constructor instead. */
@@ -69,12 +70,14 @@ public class BufferPool {
     	try 
     	{
     		LockManager lockManager = LockManager.getInstance();
-    		// first notify LockManager about the lock request.
-    		lockManager.addLockRequest(tid, pid);
-    		// try to get lock on the page 
-    		lockManager.getLock(pid).lock(tid, perm);
-    		// after the success notify the locked page about the the success to lock page.
-    		lockManager.addLockedPage(tid, pid);
+    		DbLock dbLock = lockManager.getLock(pid);
+    		synchronized (dbLock) 
+    		{
+	    		// try to get lock on the page 
+				dbLock.lock(tid, perm);
+	    		// notify about the success to lock page.
+	    		lockManager.addLockedPage(tid, pid);
+    		}
     		
     		Page bufferedPage = bufferedPages.get(pid);
 			if (bufferedPage == null)
@@ -128,7 +131,11 @@ public class BufferPool {
     public  void releasePage(TransactionId tid, PageId pid) 
     {
     	LockManager lm = LockManager.getInstance();
-    	lm.getLock(pid).unlock(tid);
+    	DbLock dbLock = lm.getLock(pid);
+		synchronized (dbLock) 
+		{
+			dbLock.unlock(tid);
+		}
     }
 
     /**
@@ -163,6 +170,7 @@ public class BufferPool {
     	Set<PageId> lockedPages = lockManager.getLockedPages(tid);
     	for (PageId p : lockedPages) 
 		{
+    		DbLock dbLock = lockManager.getLock(p);
 	    	if (commit)
 	    	{
 	    		flushPage(p);
@@ -174,8 +182,11 @@ public class BufferPool {
 	    	// notify Lock Manager that this page not locked anymore by this pid.
 	    	LockManager.getInstance().removeLockedPage(tid, p);
 	    	
-	    	// unlock the page
-	    	lockManager.getLock(p).unlock(tid);
+	    	synchronized (dbLock) 
+	    	{
+	    		// unlock the page
+	    		dbLock.unlock(tid);
+			}
 		}
     }
 

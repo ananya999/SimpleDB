@@ -1,6 +1,5 @@
 package simpledb.locking;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -66,7 +65,7 @@ public class DeadlockDependencyList
 	
 	public Set<TransactionId> getConflictingTransactions()
 	{
-		Set<TransactionId> result = new HashSet<>();
+		Set<TransactionId> result = new HashSet<TransactionId>();
 		Edge<TransactionId>[] findCycles = graph.findCycles();
 		for (Edge<TransactionId> e : findCycles) 
 		{
