@@ -96,7 +96,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       if (!lg1.acquired() && lg2.acquired()) break;
 
       if (lg1.getError() != null) {
-        lg1.stop();
+    	lg1.stop();
         bp.transactionComplete(tid1);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
@@ -105,7 +105,7 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       }
 
       if (lg2.getError() != null) {
-        lg2.stop();
+    	lg2.stop();
         bp.transactionComplete(tid2);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
 
@@ -158,7 +158,6 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       if (!lg1.acquired() && lg2.acquired()) break;
 
       if (lg1.getError() != null) {
-    	  System.out.println("hello1");
     	  lg1.stop();
         bp.transactionComplete(tid1);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));
@@ -168,7 +167,6 @@ public class DeadlockTest extends TestUtil.CreateHeapFile {
       }
 
       if (lg2.getError() != null) {
-    	  System.out.println("hello2");
         lg2.stop();
         bp.transactionComplete(tid2);
         Thread.sleep(rand.nextInt(WAIT_INTERVAL));

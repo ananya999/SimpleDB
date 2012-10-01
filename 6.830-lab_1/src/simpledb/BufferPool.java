@@ -73,6 +73,7 @@ public class BufferPool {
     		DbLock dbLock = lockManager.getLock(pid);
     		synchronized (dbLock) 
     		{
+    			lockManager.addLockRequest(tid, pid);
 	    		// try to get lock on the page 
 				dbLock.lock(tid, perm);
 	    		// notify about the success to lock page.

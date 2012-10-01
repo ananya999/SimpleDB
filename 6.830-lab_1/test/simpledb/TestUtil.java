@@ -361,7 +361,6 @@ public class TestUtil {
             	for (SimpleAction action : actions) 
             	{
             		Database.getBufferPool().getPage(tid, action.getPid(), action.getPermission());
-            		// allow read locks to acquire
             	    Thread.sleep(100);
 				}
             	

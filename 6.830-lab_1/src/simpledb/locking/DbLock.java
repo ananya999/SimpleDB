@@ -26,7 +26,6 @@ public class DbLock
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void lock(TransactionId tid, Permissions permission) throws TransactionAbortedException
 	{
-		LockManager lockManager = LockManager.getInstance();
 		if (permission == Permissions.READ_ONLY)
 		{
 			if (lock.getReadHoldCount() == 0)
@@ -35,7 +34,6 @@ public class DbLock
 				{
 					while(!lock.readLock().tryLock())
 					{
-			    		lockManager.addLockRequest(tid, pid);
 						wait();
 					}
 				}
@@ -55,9 +53,8 @@ public class DbLock
 					{
 						try
 						{
-							while(lock.writeLock().tryLock())
+							while(!lock.writeLock().tryLock())
 							{
-								lockManager.addLockRequest(tid, pid);
 								wait();
 							}
 						}
