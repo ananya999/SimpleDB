@@ -1,4 +1,6 @@
-package simpledb;
+package simpledb.logicalplan;
+
+import simpledb.Catalog;
 
 /** A LogicalScanNode represents table in the FROM list in a
  * LogicalQueryPlan */

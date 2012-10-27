@@ -19,16 +19,16 @@ import jline.ArgumentCompletor;
 import jline.ConsoleReader;
 import jline.SimpleCompletor;
 import simpledb.Database;
-import simpledb.LogicalPlan;
-import simpledb.TableStats;
 import simpledb.Transaction;
 import simpledb.TransactionId;
 import simpledb.exceptions.DbException;
 import simpledb.exceptions.TransactionAbortedException;
+import simpledb.logicalplan.LogicalPlan;
 import simpledb.operators.DbIterator;
 import simpledb.operators.Delete;
 import simpledb.operators.Insert;
 import simpledb.operators.TupleArrayIterator;
+import simpledb.optimizing.TableStats;
 import simpledb.predicates.Predicate;
 import simpledb.tuple.IntField;
 import simpledb.tuple.StringField;
@@ -50,8 +50,8 @@ import Zql.ZTransactStmt;
 import Zql.ZqlParser;
 
 public class Parser {
-    static boolean explain = false;
-     static HashMap<String, TableStats> statsMap = new HashMap<String,TableStats>();
+    public static boolean explain = false;
+    public static HashMap<String, TableStats> statsMap = new HashMap<String,TableStats>();
     private static final int IOCOSTPERPAGE = 1000;
     
     public static void setStatsMap(HashMap<String, TableStats> _statsMap) {

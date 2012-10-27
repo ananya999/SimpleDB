@@ -1,5 +1,7 @@
-package simpledb;
+package simpledb.optimizing;
 import java.util.Vector;
+
+import simpledb.logicalplan.LogicalJoinNode;
 
 /** Class returned by {@link JoinOptimizer#computeCostAndCardOfSubplan} specifying the
     cost and cardinality of the optimal plan represented by plan.

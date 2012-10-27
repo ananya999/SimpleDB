@@ -1,9 +1,13 @@
-package simpledb;
+package simpledb.optimizing;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import simpledb.Database;
 import simpledb.exceptions.ParsingException;
+import simpledb.logicalplan.LogicalJoinNode;
+import simpledb.logicalplan.LogicalPlan;
+import simpledb.logicalplan.LogicalSubplanJoinNode;
 import simpledb.operators.DbIterator;
 import simpledb.operators.Join;
 import simpledb.predicates.JoinPredicate;

@@ -1,4 +1,4 @@
-package simpledb;
+package simpledb.logicalplan;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
+import simpledb.Catalog;
+import simpledb.Database;
+import simpledb.TransactionId;
 import simpledb.aggregates.Aggregator;
 import simpledb.exceptions.ParsingException;
 import simpledb.file.HeapFile;
@@ -15,6 +18,8 @@ import simpledb.operators.Filter;
 import simpledb.operators.OrderBy;
 import simpledb.operators.Project;
 import simpledb.operators.SeqScan;
+import simpledb.optimizing.JoinOptimizer;
+import simpledb.optimizing.TableStats;
 import simpledb.predicates.Predicate;
 import simpledb.tuple.Field;
 import simpledb.tuple.IntField;
@@ -221,7 +226,7 @@ public  class LogicalPlan {
      *  @throws ParsingException if the field cannot be found in any of the tables, or if the
      *   field is ambiguous (appears in multiple tables)
      */
-    String disambiguateName(String name) throws ParsingException {
+    public String disambiguateName(String name) throws ParsingException {
 
         String[] fields = name.split("[.]");
         if (fields.length == 2 && (!fields[0].equals("null")))

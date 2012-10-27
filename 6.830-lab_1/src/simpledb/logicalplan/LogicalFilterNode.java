@@ -1,4 +1,4 @@
-package simpledb;
+package simpledb.logicalplan;
 
 import simpledb.predicates.Predicate;
 

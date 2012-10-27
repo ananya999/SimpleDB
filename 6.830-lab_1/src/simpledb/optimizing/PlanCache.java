@@ -1,7 +1,9 @@
-package simpledb;
+package simpledb.optimizing;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Vector;
+
+import simpledb.logicalplan.LogicalJoinNode;
 
 /** A PlanCache is a helper class that can be used to store the best
  * way to order a given set of joins */
@@ -28,7 +30,7 @@ public class PlanCache {
         @param s the set of joins to look up the best order for
         @return the best order for s in the cache
     */
-    Vector<LogicalJoinNode> getOrder(Set<LogicalJoinNode> s) {
+    public Vector<LogicalJoinNode> getOrder(Set<LogicalJoinNode> s) {
         return bestOrders.get(s);
     }
     
@@ -36,7 +38,7 @@ public class PlanCache {
         @param s the set of joins to look up the best cost for
         @return the cost of the best order for s in the cache
     */
-    double getCost(Set<LogicalJoinNode> s) {
+    public double getCost(Set<LogicalJoinNode> s) {
         return bestCosts.get(s);
     }
     
@@ -44,7 +46,7 @@ public class PlanCache {
         @param s the set of joins to look up the best cardinality for
         @return the cardinality of the best order for s in the cache
     */
-    int getCard(Set<LogicalJoinNode> s) {
+    public int getCard(Set<LogicalJoinNode> s) {
         return bestCardinalities.get(s);
     }
 }

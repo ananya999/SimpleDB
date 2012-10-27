@@ -1,4 +1,4 @@
-package simpledb;
+package simpledb.logicalplan;
 
 import simpledb.operators.DbIterator;
 import simpledb.predicates.Predicate;

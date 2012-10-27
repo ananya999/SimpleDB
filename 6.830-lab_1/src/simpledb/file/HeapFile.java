@@ -5,8 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import simpledb.BufferPool;
 import simpledb.Database;
@@ -37,7 +35,6 @@ public class HeapFile implements DbFile {
 	private File fileOnDisk;
 	private TupleDesc tupleDesc;
 	private int tableId;
-	private Map<Integer, HeapPage> pagesToDisk = new HashMap<Integer, HeapPage>(); 
 
 	/**
 	 * Constructs a heap file backed by the specified file.

@@ -1,10 +1,13 @@
-package simpledb;
+package simpledb.optimizing;
 
 import simpledb.predicates.Predicate;
+import simpledb.tuple.Field;
+import simpledb.tuple.IntField;
+import simpledb.tuple.StringField;
 
 /** A class to represent a fixed-width histogram over a single String-based field.
  */
-public class StringHistogram {
+public class StringHistogram implements Histogram {
     IntHistogram hist;
 
     /** Create a new StringHistogram with a specified number of buckets.
@@ -41,18 +44,18 @@ public class StringHistogram {
         return stringToInt("");
     }
 
-    /** Add a new value to thte histogram */
-    public void addValue(String s) {
-        int val = stringToInt(s);
-        hist.addValue(val);
+    /** Add a new value to the histogram */
+    public void addValue(Field s) {
+        int val = stringToInt(((StringField)s).getValue());
+        hist.addValue(new IntField(val));
     }
 
     /** Estimate the selectivity (as a double between 0 and 1) of the specified predicate over the specified string 
         @param op The operation being applied
         @param s The string to apply op to 
     */
-    public double estimateSelectivity(Predicate.Op op, String s) {
-        int val = stringToInt(s);
-        return hist.estimateSelectivity(op, val);
+    public double estimateSelectivity(Predicate.Op op, Field s) {
+        int val = stringToInt(((StringField)s).getValue());
+        return hist.estimateSelectivity(op, new IntField(val));
     }
 }
