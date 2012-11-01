@@ -9,7 +9,6 @@ import simpledb.exceptions.DbException;
 import simpledb.exceptions.TransactionAbortedException;
 import simpledb.file.DbFile;
 import simpledb.file.DbFileIterator;
-import simpledb.parser.Parser;
 import simpledb.predicates.Predicate;
 import simpledb.tuple.Field;
 import simpledb.tuple.IntField;
@@ -51,6 +50,7 @@ public class TableStats {
 		statFields = new Histogram[numFields];
     	try 
     	{
+    		getRowCount(dbFile);
     		for (int i = 0; i < numFields ; i++)
     		{
     			Type type = tupleDesc.getType(i);
@@ -98,18 +98,43 @@ public class TableStats {
 		}
     }
 
-    private void createAndPopulateHistogram(int i, DbFile dbFile, MinMaxPair minMaxPair, Histogram histogram) throws NoSuchElementException, DbException, TransactionAbortedException 
+    private void getRowCount(DbFile dbFile) throws NoSuchElementException, DbException, TransactionAbortedException 
+    {
+    	
+    	DbFileIterator iterator = dbFile.iterator(new TransactionId());
+    	try
+    	{
+    		iterator.open();
+    		while(iterator.hasNext())
+    		{
+    			iterator.next();
+    			rowCount++;
+    		}
+    	}
+    	finally
+    	{
+    		iterator.close();
+    	}
+	}
+
+	private void createAndPopulateHistogram(int i, DbFile dbFile, MinMaxPair minMaxPair, Histogram histogram) throws NoSuchElementException, DbException, TransactionAbortedException 
     {
     	TransactionId tid = new TransactionId();
     	DbFileIterator iter = dbFile.iterator(tid);
-    	if (iter.hasNext())
-    	{
-    		rowCount++;
-    		
-    		Tuple t = iter.next();
-    		Field field = t.getField(i);
-    		histogram.addValue(field);
-    	}
+	    try
+	    {
+	    	iter.open();
+    		while (iter.hasNext())
+	    	{
+	    		Tuple t = iter.next();
+	    		Field field = t.getField(i);
+	    		histogram.addValue(field);
+	    	}
+	    }
+	    finally
+	    {
+	    	iter.close();
+	    }
 		
 	}
 	private MinMaxPair computeMinMaxForIntField(int field, DbFile dbFile) throws NoSuchElementException, DbException, TransactionAbortedException 
@@ -120,48 +145,56 @@ public class TableStats {
     	
     	MinMaxPair minMaxPair = new MinMaxPair();
     	TransactionId tid = new TransactionId();
-		DbFileIterator iter = dbFile.iterator(tid);
-		if (iter.hasNext())
+    	DbFileIterator iter = dbFile.iterator(tid);
+		try
 		{
-			t = iter.next();
-			Field value1 = t.getField(field);
-			first = ((IntField)value1).getValue();
+			iter.open();
 			if (iter.hasNext())
 			{
 				t = iter.next();
-				Field value2 = t.getField(field);
-				second = ((IntField)value2).getValue();
+				Field value1 = t.getField(field);
+				first = ((IntField)value1).getValue();
+				if (iter.hasNext())
+				{
+					t = iter.next();
+					Field value2 = t.getField(field);
+					second = ((IntField)value2).getValue();
+				}
+				else
+				{
+					minMaxPair.max = first;
+					minMaxPair.min = first;
+					return minMaxPair;
+				}
+				if (first > second)
+				{
+					minMaxPair.max = first;
+					minMaxPair.min = second;
+				}
+				else
+				{
+					minMaxPair.max = second;
+					minMaxPair.min = first;
+				}
 			}
-			else
+			while(iter.hasNext())
 			{
-				minMaxPair.max = first;
-				minMaxPair.min = first;
-				return minMaxPair;
-			}
-			if (first > second)
-			{
-				minMaxPair.max = first;
-				minMaxPair.min = second;
-			}
-			else
-			{
-				minMaxPair.max = second;
-				minMaxPair.min = first;
+				t = iter.next();
+				Field next = t.getField(field);
+				int nextValue = ((IntField)next).getValue();
+				if (nextValue > minMaxPair.max)
+				{
+					minMaxPair.max = nextValue;
+				}
+				else if (nextValue < minMaxPair.min)
+				{
+					minMaxPair.min = nextValue;
+				}
 			}
 		}
-		while(iter.hasNext())
+		finally
 		{
-			t = iter.next();
-			Field next = t.getField(field);
-			int nextValue = ((IntField)next).getValue();
-			if (nextValue > minMaxPair.max)
-			{
-				minMaxPair.max = nextValue;
-			}
-			else if (nextValue < minMaxPair.min)
-			{
-				minMaxPair.min = nextValue;
-			}
+			iter.close();
 		}
 		return minMaxPair;
 	}

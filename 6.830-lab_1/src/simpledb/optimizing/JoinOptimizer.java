@@ -76,7 +76,7 @@ public class JoinOptimizer {
      * The cost of the join should be calculated based on the join
      * algorithm (or algorithms) that you implemented for Lab 2.  It
      * should be a function of the amount of data that must be read
-     * over the course of the query, as well as the number of CPU opertions
+     * over the course of the query, as well as the number of CPU operations
      * performed by your join.  Assume that the cost of a single predicate application
      * is roughly 1.
      *
@@ -89,11 +89,14 @@ public class JoinOptimizer {
      * @return An estimate of the cost of this query, in terms of cost1 and cost2
      */
     public double estimateJoinCost(LogicalJoinNode j, int card1, int card2, double cost1, double cost2) {
-        if (j instanceof LogicalSubplanJoinNode) {
+        if (j instanceof LogicalSubplanJoinNode) 
+        {
         	// A LogicalSubplanJoinNode represents a subquery.
         	// You do not need to implement proper support for these for Lab 4.
         	return card1 + cost1 + cost2;
-        } else {
+        } 
+        else 
+        {
             // Insert your code here.
             // HINT:  You may need to use the variable "j" if you implemented a join
             //        algorithm that's more complicated than a basic nested-loops join.
@@ -114,11 +117,14 @@ public class JoinOptimizer {
      * @return The cardinality of the join
      */
     public int estimateJoinCardinality(LogicalJoinNode j, int card1, int card2, boolean t1pkey, boolean t2pkey) {
-        if (j instanceof LogicalSubplanJoinNode) {
+        if (j instanceof LogicalSubplanJoinNode) 
+        {
             // A LogicalSubplanJoinNode represents a subquery.
             // You do not need to implement proper support for these for Lab 4.
             return card1;
-        } else {
+        } 
+        else 
+        {
             // some code goes here
             return -1;
         }

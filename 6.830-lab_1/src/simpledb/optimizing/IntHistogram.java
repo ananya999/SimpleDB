@@ -94,6 +94,7 @@ public class IntHistogram implements Histogram {
 		Bucket bucket = segmentation[b];
 		int h = bucket.getHeight();
 		double w = bucket.getWidth();
+		
     	switch (op) 
 		{
 			case EQUALS:
