@@ -1,4 +1,4 @@
-package simpledb.optimizing;
+package simpledb.optimizing.statistics;
 
 import java.util.Arrays;
 

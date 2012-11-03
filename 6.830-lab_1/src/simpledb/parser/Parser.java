@@ -28,7 +28,7 @@ import simpledb.operators.DbIterator;
 import simpledb.operators.Delete;
 import simpledb.operators.Insert;
 import simpledb.operators.TupleArrayIterator;
-import simpledb.optimizing.TableStats;
+import simpledb.optimizing.statistics.TableStats;
 import simpledb.predicates.Predicate;
 import simpledb.tuple.IntField;
 import simpledb.tuple.StringField;

@@ -10,7 +10,7 @@ import org.junit.Test;
 import simpledb.exceptions.DbException;
 import simpledb.exceptions.TransactionAbortedException;
 import simpledb.file.HeapFile;
-import simpledb.optimizing.TableStats;
+import simpledb.optimizing.statistics.TableStats;
 import simpledb.predicates.Predicate;
 import simpledb.systemtest.SimpleDbTestBase;
 import simpledb.systemtest.SystemTestUtil;

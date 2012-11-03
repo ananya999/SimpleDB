@@ -1,4 +1,4 @@
-package simpledb.optimizing;
+package simpledb.optimizing.statistics;
 
 import simpledb.predicates.Predicate;
 import simpledb.tuple.Field;

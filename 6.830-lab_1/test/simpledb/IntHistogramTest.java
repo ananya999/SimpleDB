@@ -3,7 +3,7 @@ package simpledb;
 import org.junit.Assert;
 import org.junit.Test;
 
-import simpledb.optimizing.IntHistogram;
+import simpledb.optimizing.statistics.IntHistogram;
 import simpledb.predicates.Predicate.Op;
 import simpledb.tuple.IntField;
 

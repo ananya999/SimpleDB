@@ -1,7 +1,19 @@
 package simpledb.optimizing;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.tree.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.WindowConstants;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 import simpledb.Database;
 import simpledb.exceptions.ParsingException;
@@ -10,6 +22,7 @@ import simpledb.logicalplan.LogicalPlan;
 import simpledb.logicalplan.LogicalSubplanJoinNode;
 import simpledb.operators.DbIterator;
 import simpledb.operators.Join;
+import simpledb.optimizing.statistics.TableStats;
 import simpledb.predicates.JoinPredicate;
 
 /** The JoinOptimizer class is responsible for ordering a series of

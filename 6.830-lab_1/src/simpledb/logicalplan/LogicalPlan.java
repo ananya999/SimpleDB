@@ -19,7 +19,7 @@ import simpledb.operators.OrderBy;
 import simpledb.operators.Project;
 import simpledb.operators.SeqScan;
 import simpledb.optimizing.JoinOptimizer;
-import simpledb.optimizing.TableStats;
+import simpledb.optimizing.statistics.TableStats;
 import simpledb.predicates.Predicate;
 import simpledb.tuple.Field;
 import simpledb.tuple.IntField;

@@ -1,4 +1,4 @@
-package simpledb.optimizing;
+package simpledb.optimizing.statistics;
 
 import java.util.NoSuchElementException;
 
@@ -230,6 +230,17 @@ public class TableStats {
     public int estimateTableCardinality(double selectivityFactor) 
     {
 		return (int) (rowCount * selectivityFactor);
+    }
+    
+    /**
+     * 
+     * @param field
+     * @param selectivityFactor
+     * @return the number of distinct values present in a column
+     */
+    public int estimateColumnCardinality(int field, double selectivityFactor)
+    {
+		return 0;
     }
 
     /** 
