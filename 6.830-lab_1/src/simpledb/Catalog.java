@@ -94,6 +94,10 @@ public class Catalog {
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         return idToTableProperties.get(tableid).getFile().getTupleDesc();
     }
+    
+    public TupleDesc getTupleDesc(String tableName) throws NoSuchElementException {
+        return getTupleDesc(getTableId(tableName));
+    }
 
     /**
      * Returns the DbFile that can be used to read the contents of the

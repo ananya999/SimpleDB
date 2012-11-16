@@ -2,7 +2,7 @@ package simpledb.logicalplan;
 
 import simpledb.predicates.Predicate;
 
-/** A LogicalJoinNode represens the state needed of a join of two
+/** A LogicalJoinNode represent the state needed of a join of two
  * tables in a LogicalQueryPlan */
 public class LogicalJoinNode {
 
@@ -47,7 +47,7 @@ public class LogicalJoinNode {
         else 
             newp = p;
         
-        LogicalJoinNode j2 = new LogicalJoinNode(t2,t1,f2,f1, newp);
+        LogicalJoinNode j2 = new LogicalJoinNode(t2,t1,f2,f1,newp);
         return j2;
     }
     

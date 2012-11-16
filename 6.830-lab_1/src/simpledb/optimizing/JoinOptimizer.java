@@ -15,6 +15,7 @@ import javax.swing.WindowConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+import simpledb.Catalog;
 import simpledb.Database;
 import simpledb.exceptions.ParsingException;
 import simpledb.logicalplan.LogicalJoinNode;
@@ -22,6 +23,7 @@ import simpledb.logicalplan.LogicalPlan;
 import simpledb.logicalplan.LogicalSubplanJoinNode;
 import simpledb.operators.DbIterator;
 import simpledb.operators.Join;
+import simpledb.optimizing.statistics.JoinCardinalityEstimator;
 import simpledb.optimizing.statistics.TableStats;
 import simpledb.predicates.JoinPredicate;
 
@@ -110,10 +112,7 @@ public class JoinOptimizer {
         } 
         else 
         {
-            // Insert your code here.
-            // HINT:  You may need to use the variable "j" if you implemented a join
-            //        algorithm that's more complicated than a basic nested-loops join.
-            return -1.0;
+			return cost1 + card1 * cost2 + card1 * card2;
         }
     }
 
@@ -125,25 +124,30 @@ public class JoinOptimizer {
      *   being performed.
      * @param card1 Cardinality of the left-hand table in the join
      * @param card2 Cardinality of the right-hand table in the join
+     * @param k 
+     * @param i 
      * @param t1pkey Is the left-hand table a primary-key table?
      * @param t2pkey Is the right-hand table a primary-key table?
+     * @param joinSelectivity 
      * @return The cardinality of the join
      */
-    public int estimateJoinCardinality(LogicalJoinNode j, int card1, int card2, boolean t1pkey, boolean t2pkey) {
+    public int estimateJoinCardinality(LogicalJoinNode j, TableStats stats1, TableStats stats2) {
         if (j instanceof LogicalSubplanJoinNode) 
         {
             // A LogicalSubplanJoinNode represents a subquery.
             // You do not need to implement proper support for these for Lab 4.
-            return card1;
+            return 0;
         } 
         else 
         {
-            // some code goes here
-            return -1;
+        	JoinCardinalityEstimator joinCardinalityEstimator = new JoinCardinalityEstimator(j, stats1, stats2);
+        	return joinCardinalityEstimator.estimateJoinCardinality();
         }
     }
 
-    /** Helper method to enumerate all of the subsets of a given size
+   
+
+	/** Helper method to enumerate all of the subsets of a given size
         of a specified vector.
         @param v The vector whose subsets are desired
         @param size The size of the subsets of interest
@@ -189,15 +193,41 @@ public class JoinOptimizer {
      *    missing a table in the join, or or when another internal
      *    error occurs
      */
-    public Vector<LogicalJoinNode> orderJoins(HashMap<String, TableStats> stats, 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public Vector<LogicalJoinNode> orderJoins(HashMap<String, TableStats> stats, 
                                               HashMap<String, Double> filterSelectivities,  
                                               boolean explain) throws ParsingException 
     {
-        //Not necessary for labs 1--3
-
-        // some code goes here
-        //Replace the following
-        return joins;
+    	PlanCache pc = new PlanCache();
+    	CostCard costCard = new CostCard();
+    	int s = joins.size();
+    	for (int i = 1; i <= s; i++) 
+    	{
+    		Set<Set<LogicalJoinNode>> enumerateSubsets = enumerateSubsets(joins, i);
+    		for (Set<LogicalJoinNode> joinSet : enumerateSubsets) 
+    		{
+    			double  bestCostSoFar = Double.MAX_VALUE;
+    			for (LogicalJoinNode joinToRemove : joinSet) 
+    			{
+    				costCard = computeCostAndCardOfSubplan(stats, filterSelectivities, joinToRemove, joinSet, bestCostSoFar, pc);
+    				if (costCard != null)
+    				{
+    					bestCostSoFar = costCard.cost;
+    					pc.addPlan(joinSet, costCard.cost, costCard.card, costCard.plan);
+    				}
+    					
+				}
+    			
+			}
+		}
+    	if (explain)
+        {
+    		if (costCard != null)
+    		{
+    			printJoins(costCard.plan, pc, stats, filterSelectivities);
+    		}
+        }
+    	return pc.getOrder(new HashSet<LogicalJoinNode>(joins));
     } 
  
     //===================== Private Methods =================================
@@ -251,7 +281,8 @@ public class JoinOptimizer {
         int t1card,t2card;
         boolean leftPkey, rightPkey;
 
-        if (news.isEmpty()) { //base case -- both are base relations
+        if (news.isEmpty()) 
+        { //base case -- both are base relations
             prevBest = new Vector<LogicalJoinNode>();
             t1cost = stats.get(j.t1).estimateScanCost();
             t1card = stats.get(j.t1).estimateTableCardinality(filterSelectivities.get(j.t1));
@@ -260,34 +291,41 @@ public class JoinOptimizer {
             t2cost = j.t2==null?0:stats.get(j.t2).estimateScanCost();
             t2card = j.t2==null?0:stats.get(j.t2).estimateTableCardinality(filterSelectivities.get(j.t2));
             rightPkey = j.t2==null?false:isPkey(j.t2,j.f2);
-        } else {
+        } 
+        else 
+        {
             //news is not empty -- figure best way to join j to news
             prevBest = pc.getOrder(news);
 
-            //possible that we have not cached an answer, if subset
-            // includes a cross product
-            if (prevBest == null) {
+            //possible that we have not cached an answer, if subset includes a cross product
+            if (prevBest == null) 
+            {
                 return null;
             }
 
             double prevBestCost = pc.getCost(news);
             int bestCard = pc.getCard(news);
 
-            t1cost = prevBestCost;  //left side just has cost of whatever left subtree is
+            t1cost = prevBestCost; //left side just has cost of whatever left subtree is
             t1card = bestCard;
             leftPkey = hasPkey(prevBest);
 
             //estimate cost of right subtree
-            if (doesJoin(prevBest,j.t1)) { //j.t1 is in prevBest
+            if (doesJoin(prevBest,j.t1)) //j.t1 is in prevBest
+            { 
                 t2cost = j.t2 == null?0:stats.get(j.t2).estimateScanCost();
                 t2card = j.t2 == null?0:stats.get(j.t2).estimateTableCardinality(filterSelectivities.get(j.t2));
                 rightPkey = j.t2 == null?false:isPkey(j.t2,j.f2);
-            } else if (doesJoin(prevBest, j.t2)) { //j.t2 is in prevbest (both shouldn't be)
+            } 
+            else if (doesJoin(prevBest, j.t2)) //j.t2 is in prevbest (both shouldn't be)
+            { 
                 t2cost = stats.get(j.t1).estimateScanCost();
                 t2card = stats.get(j.t1).estimateTableCardinality(filterSelectivities.get(j.t1));
                 rightPkey = isPkey(j.t1,j.f1);
 
-            } else {
+            } 
+            else 
+            {
                 //don't consider this plan if one of j.t1 or j.t2
                 //isn't a table joined in prevBest (cross product)
                 return null;
@@ -299,7 +337,8 @@ public class JoinOptimizer {
 
         LogicalJoinNode j2 = j.swapInnerOuter();
         double cost2 = estimateJoinCost(j2,t2card,t1card, t2cost,t1cost);
-        if (cost2 < cost1) {
+        if (cost2 < cost1) 
+        {
             boolean tmp;
             j = j2;
             cost1 = cost2;
@@ -308,10 +347,12 @@ public class JoinOptimizer {
             leftPkey = tmp;
         }
         if (cost1 >= bestCostSoFar)
+        {
             return null;
-
+        }
         CostCard cc = new CostCard();
-        cc.card = estimateJoinCardinality(j, t1card, t2card, leftPkey, rightPkey);
+        
+        cc.card = estimateJoinCardinality(j, stats.get(j.t1),stats.get(j.t2));
         cc.cost = cost1;
         cc.plan = (Vector<LogicalJoinNode>)prevBest.clone();
         cc.plan.addElement(j);  //prevbest is left -- add new join to end
@@ -349,11 +390,11 @@ public class JoinOptimizer {
         when the analyze flag is true.
 
         @param js the join plan to visualize
-        @param pc the PlanCache accumulated whild building the optimal
+        @param pc the PlanCache accumulated while building the optimal
                plan
         @param stats table statistics for base tables
         @param selectivities the selectivities of the filters over each
-                of the tables (where tables are indentified by their
+                of the tables (where tables are identified by their
                 alias or name if no alias is given)
     */
     private void printJoins(Vector<LogicalJoinNode> js, 

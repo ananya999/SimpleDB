@@ -38,7 +38,7 @@ public class PlanCache {
         @param s the set of joins to look up the best cost for
         @return the cost of the best order for s in the cache
     */
-    public double getCost(Set<LogicalJoinNode> s) {
+    public Double getCost(Set<LogicalJoinNode> s) {
         return bestCosts.get(s);
     }
     
@@ -46,7 +46,7 @@ public class PlanCache {
         @param s the set of joins to look up the best cardinality for
         @return the cardinality of the best order for s in the cache
     */
-    public int getCard(Set<LogicalJoinNode> s) {
+    public Integer getCard(Set<LogicalJoinNode> s) {
         return bestCardinalities.get(s);
     }
 }

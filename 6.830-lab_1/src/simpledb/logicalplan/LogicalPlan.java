@@ -140,7 +140,10 @@ public  class LogicalPlan {
         String table2 = joinField2.split("[.]")[0];
 
         if (table1.equals(table2))
+        {
             throw new ParsingException("Cannot join on two fields from same table");
+        }
+        Catalog catalog = Database.getCatalog();
         LogicalJoinNode lj = new LogicalJoinNode(table1,table2,joinField1, joinField2, pred);
         System.out.println("Added join between " + joinField1 + " and " + joinField2);
         joins.addElement(lj);
@@ -352,7 +355,8 @@ public  class LogicalPlan {
         joins = jo.orderJoins(statsMap,filterSelectivities,explain);
 
         Iterator<LogicalJoinNode> joinIt = joins.iterator();
-        while (joinIt.hasNext()) {
+        while (joinIt.hasNext()) 
+        {
             LogicalJoinNode lj = joinIt.next();
             DbIterator plan1;
             DbIterator plan2;
@@ -371,11 +375,14 @@ public  class LogicalPlan {
 
             plan1 = subplanMap.get(t1name);
 
-            if (isSubqueryJoin) {
+            if (isSubqueryJoin) 
+            {
                 plan2 = ((LogicalSubplanJoinNode)lj).subPlan;
                 if (plan2 == null) 
                     throw new ParsingException("Invalid subquery.");
-            } else { 
+            } 
+            else 
+            { 
                 plan2 = subplanMap.get(t2name);
             }
             
@@ -388,7 +395,8 @@ public  class LogicalPlan {
             j = jo.instantiateJoin(lj,plan1,plan2, statsMap);
             subplanMap.put(t1name, j);
 
-            if (!isSubqueryJoin) {
+            if (!isSubqueryJoin) 
+            {
                 subplanMap.remove(t2name);
                 equivMap.put(t2name,t1name);  //keep track of the fact that this new node contains both tables
                     //make sure anything that was equiv to lj.t2 (which we are just removed) is

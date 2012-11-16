@@ -115,7 +115,7 @@ public class TupleDesc {
     	}
     	for (int i = 0; !found && i < fieldsName.length; i++) 
     	{
-    		if (fieldsName[i].equals(name))
+    		if (ignoreTableNameEquels(fieldsName[i],name));
 			{
 				index = i;
 				found = true;
@@ -128,7 +128,14 @@ public class TupleDesc {
     	return index;
     }
 
-    /**
+    private boolean ignoreTableNameEquels(String tdName, String fName) 
+    {
+		String tdSubstring = tdName.substring(tdName.indexOf('.') + 1);
+		String fSubstring = fName.substring(fName.indexOf('.') + 1);
+    	return tdSubstring.equals(fSubstring);
+	}
+
+	/**
      * Gets the type of the ith field of this TupleDesc.
      *
      * @param i The index of the field to get the type of. It must be a valid index.

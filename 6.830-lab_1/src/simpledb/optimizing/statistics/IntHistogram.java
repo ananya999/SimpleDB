@@ -1,6 +1,8 @@
 package simpledb.optimizing.statistics;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import simpledb.predicates.Predicate;
 import simpledb.tuple.Field;
@@ -12,7 +14,7 @@ public class IntHistogram implements Histogram {
 
 	private Bucket[] segmentation;
 	private double fixedRange;
-	private int ntups = 0;
+	private int rowCount = 0;
 	private int max;
 	private int min;
 	
@@ -52,7 +54,7 @@ public class IntHistogram implements Histogram {
      * @param v Value to add to the histogram
      */
     public void addValue(Field v) {
-    	ntups++;
+    	rowCount++;
     	int bucket = findBucket(((IntField)v).getValue());
 		segmentation[bucket].height++;
     }
@@ -105,7 +107,7 @@ public class IntHistogram implements Histogram {
 				}
 				else
 				{
-					selectivityFactor = (h / w) / ntups;
+					selectivityFactor = (h / w) / rowCount;
 				}
 				break;
 			}
@@ -121,10 +123,10 @@ public class IntHistogram implements Histogram {
 				}
 				else
 				{
-					double sum = bucket.getPartialFraction(v);
+					double sum = ((double)bucket.height/rowCount) * (bucket.b_right - v)/bucket.getWidth();
 					for (int i = b + 1; i < segmentation.length; i++) 
 					{
-						sum = sum + segmentation[i].getFranction();
+						sum = sum + ((double)segmentation[i].getHeight()/rowCount);
 					}
 					selectivityFactor = sum;
 				}
@@ -142,10 +144,10 @@ public class IntHistogram implements Histogram {
 				}
 				else
 				{
-					double sum = bucket.getPartialFraction(v);
+					double sum = ((double)bucket.height/rowCount) * (bucket.b_right - v)/bucket.getWidth();
 					for (int i = b - 1; i >= 0; i--) 
 					{
-						sum = sum + segmentation[i].getFranction();
+						sum = sum + ((double)segmentation[i].getHeight()/rowCount);
 					}
 					selectivityFactor = sum;
 				}
@@ -164,15 +166,15 @@ public class IntHistogram implements Histogram {
 				else
 				{
 					// GREATER_THAN
-					double sum = bucket.getPartialFraction(v);
+					double sum = ((double)bucket.height/rowCount) * (bucket.b_right - v)/bucket.getWidth();
 					for (int i = b + 1; i < segmentation.length; i++) 
 					{
-						sum = sum + segmentation[i].getFranction();
+						sum = sum + ((double)segmentation[i].getHeight()/rowCount);
 					}
 					selectivityFactor = sum;
 					
 					// EQUALS
-					selectivityFactor = selectivityFactor + (h / w) / ntups;
+					selectivityFactor = selectivityFactor + (h / w) / rowCount;
 				}
 				break;
 			}
@@ -189,15 +191,15 @@ public class IntHistogram implements Histogram {
 				else
 				{
 					// LESS_THAN
-					double sum = bucket.getPartialFraction(v);
+					double sum = ((double)bucket.height/rowCount) * (bucket.b_right - v)/bucket.getWidth();
 					for (int i = b - 1; i >= 0; i--) 
 					{
-						sum = sum + segmentation[i].getFranction();
+						sum = sum + ((double)segmentation[i].getHeight()/rowCount);
 					}
 					selectivityFactor = sum;
 					
 					// EQUALS
-					selectivityFactor = selectivityFactor + (h / w) / ntups;
+					selectivityFactor = selectivityFactor + (h / w) / rowCount;
 				}
 				break;
 			}
@@ -210,7 +212,7 @@ public class IntHistogram implements Histogram {
 				}
 				else
 				{
-					selectivityFactor = 1 - (h / w) / ntups;
+					selectivityFactor = 1 - (h / w) / rowCount;
 				}
 				break;
 			}
@@ -229,44 +231,25 @@ public class IntHistogram implements Histogram {
     	return Arrays.toString(segmentation);
     }
     
-    private class Bucket
-    {
-    	double b_right;
-    	double b_left;
-    	int height;
-    	
-    	public Bucket(double b_left, double b_right, int height) {
-			this.b_right = b_right;
-			this.b_left = b_left;
-			this.height = height;
+
+	@Override
+	public Iterator<Bucket> getBucketIterator() 
+	{
+		List<Bucket> bucketList = Arrays.asList(segmentation);
+		return bucketList.iterator();
+				
+	}
+
+	@Override
+	public int getHightOfRange(double b_left, double b_right) {
+		int total = 0;
+		for (Bucket b : segmentation) 
+		{
+			if (b.b_left >=b_left && b.b_right <= b_right)
+			{
+				total = total + b.height;
+			}
 		}
-    	
-    	double getFranction()
-    	{
-    		return (double)height/ntups;
-    	}
-    	
-    	int  getHeight()
-    	{
-    		return height;
-    	}
-    	
-    	double getWidth()
-    	{
-    		return b_right - b_left;
-    	}
-    	
-    	double getPartialFraction(int v)
-    	{
-    		return getFranction() * (b_right - v)/getWidth();
-    	}
-    	
-		@Override
-		public String toString() {
-			return "Bucket [b_left=" + b_left + ", b_right=" + b_right
-					+ ", height=" + height + ", toString()=" + super.toString()
-					+ "]";
-		}
-    	
-    }
+		return total;
+	}
 }

@@ -1,6 +1,8 @@
 package simpledb.optimizing.statistics;
 
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import simpledb.Catalog;
 import simpledb.Database;
@@ -238,9 +240,32 @@ public class TableStats {
      * @param selectivityFactor
      * @return the number of distinct values present in a column
      */
-    public int estimateColumnCardinality(int field, double selectivityFactor)
+    public int estimateColumnCardinality(int field)
     {
-		return 0;
+    	Set<Field> uniqeness = new HashSet<Field>();
+    	Catalog catalog = Database.getCatalog();
+    	DbFile dbFile = catalog.getDbFile(tableid);
+    	DbFileIterator iterator = dbFile.iterator(new TransactionId());
+    	try
+    	{
+    		iterator.open();
+    		while(iterator.hasNext())
+    		{
+    			Field f = iterator.next().getField(field);
+    			uniqeness.add(f);
+    		}
+    	} 
+    	catch (DbException e) 
+    	{
+		} 
+    	catch (TransactionAbortedException e) 
+    	{
+		}
+    	finally
+    	{
+    		iterator.close();
+    	}
+		return uniqeness.size();
     }
 
     /** 
@@ -254,6 +279,11 @@ public class TableStats {
     public double estimateSelectivity(int field, Predicate.Op op, Field constant) 
     {
         return statFields[field].estimateSelectivity(op, constant);
+    }
+    
+    public Histogram getHistogram(int field)
+    {
+    	return statFields[field];
     }
     
     private class MinMaxPair

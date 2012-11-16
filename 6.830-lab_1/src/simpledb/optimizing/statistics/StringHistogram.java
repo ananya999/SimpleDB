@@ -1,5 +1,7 @@
 package simpledb.optimizing.statistics;
 
+import java.util.Iterator;
+
 import simpledb.predicates.Predicate;
 import simpledb.tuple.Field;
 import simpledb.tuple.IntField;
@@ -58,4 +60,15 @@ public class StringHistogram implements Histogram {
         int val = stringToInt(((StringField)s).getValue());
         return hist.estimateSelectivity(op, new IntField(val));
     }
+
+	@Override
+	public Iterator<Bucket> getBucketIterator() {
+		return hist.getBucketIterator();
+	}
+
+	@Override
+	public int getHightOfRange(double b_left, double b_right) 
+	{
+		return hist.getHightOfRange(b_left, b_right);
+	}
 }
