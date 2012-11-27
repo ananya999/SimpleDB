@@ -410,7 +410,6 @@ public  class LogicalPlan {
                     
                 // subplanMap.put(lj.t2, j);
             }
-            
         }
 
         if (subplanMap.size() > 1) {
@@ -468,7 +467,8 @@ public  class LogicalPlan {
                 }
         }
 
-        if (hasAgg) {
+        if (hasAgg) 
+        {
             TupleDesc td = node.getTupleDesc();
             Aggregate aggNode;
             try {
