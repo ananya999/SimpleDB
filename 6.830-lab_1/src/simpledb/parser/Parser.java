@@ -53,6 +53,7 @@ public class Parser {
     public static boolean explain = false;
     public static HashMap<String, TableStats> statsMap = new HashMap<String,TableStats>();
     private static final int IOCOSTPERPAGE = 1000;
+    private static Object lock = new Object();
     
     public static void setStatsMap(HashMap<String, TableStats> _statsMap) {
     	statsMap = _statsMap;
@@ -514,7 +515,8 @@ public class Parser {
         Iterator<Integer> tableIt = Database.getCatalog().tableIdIterator();
 
         System.out.println("Computing table stats.");
-        while (tableIt.hasNext()) {
+        while (tableIt.hasNext()) 
+        {
             int tableid = tableIt.next();
             TableStats s = new TableStats(tableid, IOCOSTPERPAGE);
             statsMap.put(Database.getCatalog().getTableName(tableid), s);
@@ -524,12 +526,17 @@ public class Parser {
         boolean interactive = true;
         String queryFile = null;
 
-        if (argv.length > 1) {
-            for (int i = 1; i<argv.length; i++) {
-                if (argv[i].equals("-explain")) {
+        if (argv.length > 1) 
+        {
+            for (int i = 1; i<argv.length; i++) 
+            {
+                if (argv[i].equals("-explain")) 
+                {
                     explain = true;
                     System.out.println("Explain mode enabled.");
-                } else if (argv[i].equals("-f")) {
+                } 
+                else if (argv[i].equals("-f")) 
+                {
                     interactive = false;
                     if (i++ == argv.length) {
                         System.out.println("Expected file name after -f\n" + usage);
@@ -537,20 +544,34 @@ public class Parser {
                     }
                     queryFile = argv[i];
 
-                } else {
+                } 
+                else 
+                {
                     System.out.println("Unknown argument " + argv[i] + "\n " + usage);
+                    System.exit(0);
                 }
             }
         }
-        if (!interactive) {
-                try {
-                    curtrans = new Transaction();
-                    curtrans.start();
-                    processNextStatement(new FileInputStream(new File(queryFile)));
-                } catch (FileNotFoundException e) {
-                    System.out.println("Unable to find query file" + queryFile);
-                    e.printStackTrace();
-                }
+        synchronized (lock) 
+        {
+			//create a transaction for the query
+			if (curtrans == null) {
+				curtrans = new Transaction();
+				curtrans.start();
+				System.out.println("Started a new transaction tid = " + curtrans.getId().getId());
+			}
+		}
+		if (!interactive) 
+        {
+            try 
+            {
+                processNextStatement(new FileInputStream(new File(queryFile)));
+            } 
+            catch (FileNotFoundException e) 
+            {
+                System.out.println("Unable to find query file" + queryFile);
+                e.printStackTrace();
+            }
         } 
         else 
         { // no query file, run interactive prompt
@@ -571,13 +592,6 @@ public class Parser {
                     int split = line.indexOf(';');
                     buffer.append(line.substring(0, split+1));
                     byte[] statementBytes = buffer.toString().getBytes("UTF-8");
-
-                    //create a transaction for the query
-                    if (curtrans == null) {
-                        curtrans = new Transaction();
-                        curtrans.start();
-                        System.out.println("Started a new transaction tid = " + curtrans.getId().getId());
-                    }
                     long startTime = System.currentTimeMillis();
                     processNextStatement(new ByteArrayInputStream(statementBytes));
                     long time = System.currentTimeMillis() - startTime;

@@ -52,7 +52,11 @@ public class LogicalJoinNode {
     }
     
     @Override public boolean equals(Object o) {
-        LogicalJoinNode j2 =(LogicalJoinNode)o;
+        if(o == null)
+        {
+        	return false;
+        }
+    	LogicalJoinNode j2 =(LogicalJoinNode)o;
         return (j2.t1.equals(t1)  || j2.t1.equals(t2)) && (j2.t2.equals(t1)  || j2.t2.equals(t2));
     }
     

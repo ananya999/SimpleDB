@@ -476,16 +476,14 @@ public class JoinOptimizer {
 
         //Set the icon for leaf nodes.
         ImageIcon leafIcon = new ImageIcon("join.jpg");
-        if (leafIcon != null) {
+        if (leafIcon != null) 
+        {
             DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
             renderer.setOpenIcon(leafIcon);
             renderer.setClosedIcon(leafIcon);
 
             tree.setCellRenderer(renderer);
-        } else {
-            System.err.println("Leaf icon missing; using default.");
-        }
-
+        } 
         f.setSize(300,500);
 
         f.add(treeView);

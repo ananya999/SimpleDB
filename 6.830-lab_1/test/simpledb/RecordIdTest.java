@@ -12,10 +12,10 @@ import simpledb.systemtest.SimpleDbTestBase;
 
 public class RecordIdTest extends SimpleDbTestBase {
 
-    private static RecordId hrid;
-    private static RecordId hrid2;
-    private static RecordId hrid3;
-    private static RecordId hrid4;
+    private  RecordId hrid;
+    private  RecordId hrid2;
+    private  RecordId hrid3;
+    private  RecordId hrid4;
 
     @Before public void createPids() {
         HeapPageId hpid = new HeapPageId(-1, 2);

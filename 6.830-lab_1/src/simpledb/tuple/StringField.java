@@ -41,7 +41,11 @@ public class StringField implements Field {
     }
 
     public boolean equals(Object field) {
-        return ((StringField) field).value.equals(value);
+        if (field == null)
+        {
+        	return false;
+        }
+    	return ((StringField) field).value.equals(value);
     }
 
     /** Write this string to dos.  Always writes maxSize + 4 bytes to the
