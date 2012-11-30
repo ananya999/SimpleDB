@@ -107,9 +107,12 @@ public class HeapPage implements Page , Iterable<Tuple> {
     /** Return a view of this page before it was modified
         -- used by recovery */
     public HeapPage getBeforeImage(){
-        try {
+        try 
+        {
             return new HeapPage(pid,oldData);
-        } catch (IOException e) {
+        } 
+        catch (IOException e) 
+        {
             e.printStackTrace();
             //should never happen -- we parsed it OK before!
             System.exit(1);

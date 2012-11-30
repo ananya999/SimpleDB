@@ -174,6 +174,9 @@ public class BufferPool {
     		DbLock dbLock = lockManager.getLock(p);
 	    	if (commit)
 	    	{
+	    		// use current page contents as the before-image for the next transaction that modifies this page. 
+	    		Page page = bufferedPages.get(p);
+	    		page.setBeforeImage();
 	    		flushPage(p);
 	    	}
 	    	else
@@ -274,6 +277,13 @@ public class BufferPool {
     	if (p != null && p.isDirty() != null)
     	{
 			DbFile dbFile = Database.getCatalog().getDbFile(pid.getTableId());
+			// append an update record to the log, with a before-image and after-image. 
+			TransactionId dirtier = p.isDirty();
+			if (dirtier != null)
+			{ 
+				Database.getLogFile().logWrite(dirtier, p.getBeforeImage(), p); 
+				Database.getLogFile().force(); 
+			}
 			dbFile.writePage(p);
 			p.markDirty(false, null);
 		}

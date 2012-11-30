@@ -17,13 +17,16 @@ public class Database {
 
     private final static String LOGFILENAME = "log";
     private LogFile _logfile;
-
+    
     private Database() {
     	_catalog = new Catalog();
     	_bufferpool = new BufferPool(BufferPool.DEFAULT_PAGES);
-    	try {
+    	try 
+    	{
             _logfile = new LogFile(new File(LOGFILENAME));
-        } catch(IOException e) {
+        } 
+    	catch(IOException e) 
+    	{
             _logfile = null;
             e.printStackTrace();
             System.exit(1);

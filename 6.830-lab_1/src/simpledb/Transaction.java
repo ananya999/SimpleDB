@@ -37,18 +37,21 @@ public class Transaction {
     /** Handle the details of transaction commit / abort */
     public void transactionComplete(boolean abort) throws IOException {
 
-        if (started) {
+        if (started) 
+        {
             //write commit / abort records
-            if (abort) {
+            if (abort) 
+            {
                 Database.getLogFile().logAbort(tid); //does rollback too
-            } else {
+            } 
+            else 
+            {
                 //write all the dirty pages for this transaction out
                 Database.getBufferPool().flushPages(tid);
                 Database.getLogFile().logCommit(tid);
             }
-
-            try {
-
+            try 
+            {
                 Database.getBufferPool().transactionComplete(tid, !abort); // release locks
 
             } catch (IOException e) {

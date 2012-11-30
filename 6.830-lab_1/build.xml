@@ -125,9 +125,12 @@
     </target>
 
     <target name="runtest" depends="testcompile"
-            description="Runs the test you specify on the command line with -Dtest=">
-        <!-- Check for -Dtest command line argument -->
-        <fail unless="test" message="You must run this target with -Dtest=TestName"/>
+            description="Runs the test you specify on the input">
+        
+    	<input message="input test" addproperty="test"/>
+    	
+    	<!-- Check for -Dtest command line argument -->
+        <!--fail unless="test" message="You must run this target with -Dtest=TestName"/-->
 
         <!-- Check if the class exists -->
         <available property="test.exists" classname="simpledb.${test}">
@@ -141,9 +144,11 @@
     </target>
 
     <target name="runsystest" depends="testcompile"
-            description="Runs the system test you specify on the command line with -Dtest=">
+            description="Runs the system test you specify on the input">
+    	
+    	<input message="input test" addproperty="test"/>
         <!-- Check for -Dtest command line argument -->
-        <fail unless="test" message="You must run this target with -Dtest=TestName"/>
+        <!--fail unless="test" message="You must run this target with -Dtest=TestName"/-->
 
         <!-- Check if the class exists -->
         <available property="test.exists" classname="simpledb.systemtest.${test}">
